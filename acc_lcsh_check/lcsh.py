@@ -3,18 +3,28 @@ import requests
 
 
 class LCTerm:
-    def __init__(self, id: str, old_heading: str, id_type: str) -> None:
+    def __init__(self, id: str, old_heading: str) -> None:
         self.id = id
         self.old_heading = old_heading
-        self.id_type = id_type
         self.format = ".skos.json"
         self.url = "https://id.loc.gov/authorities/"
 
+        self._get_id_type()
+
         self.query = f"{self.url + self.id_type + '/' + self.id}"
+
         self._get_skos_json()
         self._get_current_heading()
         self._get_changes()
         self._compare_headings()
+
+    def _get_id_type(self):
+        if self.id[:2] == "sh":
+            self.id_type = "subjects"
+        elif self.id[:2] == "dg":
+            self.id_type = "demographicTerms"
+        elif self.id[:2] == "na":
+            self.id_type = "names"
 
     def _get_skos_json(self):
         skos_json_response = requests.get(f"{self.query + self.format}")
@@ -66,8 +76,10 @@ class LCTerm:
                     self.recent_change = False
                 if "deprecated" in change["change_reason"]:
                     self.is_deprecated = True
+                    self.deprecated_date = change_date
                 else:
                     self.is_deprecated = False
+                    self.deprecated_date = None
 
     def _compare_headings(self):
         if str(self.current_heading).lower() != str(self.old_heading).lower():

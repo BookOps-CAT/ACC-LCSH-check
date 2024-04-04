@@ -12,15 +12,30 @@ def read_data(file: str) -> Generator:
             yield item
 
 
-def get_data(infile: str, id_type: str, outpath: str = "temp/") -> None:
+def delete_old_files(files: list):
+    for file in files:
+        if os.path.exists(f"{file}"):
+            os.remove(f"{file}")
+
+
+def get_data(infile: str, outpath: str = "data/") -> None:
     today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
     deprecated_terms = []
     changed_terms = []
+
+    if infile == f"{infile.split('_')[0]}_{today}.txt":
+        raise ValueError("Check infile. Filename must not contain today's date.")
+
+    delete_old_files(
+        [
+            f"{infile.split('_')[0]}_{today}.txt",
+            f"{outpath}deprecated_terms_{today}.txt",
+            f"{outpath}changed_terms_{today}.txt",
+        ]
+    )
+
     for term in read_data(infile):
-        loc = LCTerm(
-            id=f"{term[1].strip('" ')}", old_heading=f"{term[0].strip(' "')}",
-            id_type=id_type,
-        )
+        loc = LCTerm(id=f"{term[1].strip('" ')}", old_heading=f"{term[0].strip(' "')}")
         print(f"Checking {loc.id}...")
         if loc.is_deprecated is True:
             deprecated_terms.append(loc.id)
@@ -32,16 +47,15 @@ def get_data(infile: str, id_type: str, outpath: str = "temp/") -> None:
                     "old_heading": loc.old_heading,
                 }
             )
+        else:
+            with open(f"{infile.split('_')[0]}_{today}.txt", "a") as outfile:
+                outfile.write(f'"{loc.old_heading}", "{loc.id}"\n')
     if len(deprecated_terms) >= 1:
-        if os.path.exists(f"{outpath}deprecated_terms_{today}.txt"):
-            os.remove(f"{outpath}deprecated_terms_{today}.txt")
         with open(f"{outpath}deprecated_terms_{today}.txt", "a") as writer_1:
             for d_term in deprecated_terms:
                 writer_1.write(f"{d_term}\n")
         print(f"Deprecated term in: {outpath}deprecated_terms_{today}.txt")
     if len(changed_terms) >= 1:
-        if os.path.exists(f"{outpath}changed_terms_{today}.txt"):
-            os.remove(f"{outpath}changed_terms_{today}.txt")
         with open(f"{outpath}changed_terms_{today}.txt", "a") as writer_2:
             for c_term in changed_terms:
                 writer_2.write(f"{c_term}\n")
