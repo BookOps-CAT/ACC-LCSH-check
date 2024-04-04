@@ -19,7 +19,6 @@ rich = "^13.7.1"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["webtest: a test that hits a live endpoint"]
 
 [tool.coverage.run]
 relative_files = true

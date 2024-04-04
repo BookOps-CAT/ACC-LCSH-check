@@ -12,14 +12,14 @@ def read_data(file: str):
             yield item
 
 
-def get_data(file: str):
+def get_data(file: str, id_type: str) -> None:
     today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
     deprecated_terms = []
     changed_terms = []
     for term in read_data(file):
         loc = LCTerm(
             id=f"{term[1].strip('" ')}", old_heading=f"{term[0].strip(' "')}",
-            id_type="subjects",
+            id_type=id_type,
         )
         print(f"Checking {loc.id}...")
         if loc.is_deprecated is True:

@@ -4,7 +4,7 @@ import pytest
 import requests
 
 
-class MockLCResponseCurrent:
+class MockLCResponseChanged:
     """Mock response from id.loc.gov for a current term"""
 
     def __init__(self):
@@ -112,9 +112,9 @@ class MockLCResponseNew:
 
 
 @pytest.fixture
-def mock_current_skos_json_response(monkeypatch):
+def mock_changed_skos_json_response(monkeypatch):
     def mock_lc_response(*args, **kwargs):
-        return MockLCResponseCurrent()
+        return MockLCResponseChanged()
 
     monkeypatch.setattr(requests, "get", mock_lc_response)
 

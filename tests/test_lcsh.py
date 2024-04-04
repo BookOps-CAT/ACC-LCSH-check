@@ -12,7 +12,7 @@ from acc_lcsh_check.lcsh import LCTerm
     ],
 )
 def test_current_term(
-    heading_id, heading_str, heading_type, mock_current_skos_json_response
+    heading_id, heading_str, heading_type, mock_changed_skos_json_response
 ):
     term = LCTerm(id=heading_id, old_heading=heading_str, id_type=heading_type)
     assert term.id == heading_id
