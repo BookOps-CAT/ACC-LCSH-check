@@ -33,9 +33,9 @@ def get_data(infile: str, id_type: str, outpath: str = "temp/") -> None:
                 }
             )
     if len(deprecated_terms) >= 1:
-        if os.path.exists(f"{outpath}deprecated_{today}.txt"):
-            os.remove(f"{outpath}deprecated_{today}.txt")
-        with open(f"{outpath}deprecated_{today}.txt", "a") as writer_1:
+        if os.path.exists(f"{outpath}deprecated_terms_{today}.txt"):
+            os.remove(f"{outpath}deprecated_terms_{today}.txt")
+        with open(f"{outpath}deprecated_terms_{today}.txt", "a") as writer_1:
             for d_term in deprecated_terms:
                 writer_1.write(f"{d_term}\n")
         print(f"Deprecated term in: {outpath}deprecated_terms_{today}.txt")
