@@ -1,5 +1,6 @@
 import datetime
 import pytest
+from typing import Generator
 
 from acc_lcsh_check.checker import read_data, get_data
 
@@ -9,6 +10,7 @@ def test_read_data():
     for term in data:
         assert term[0].strip('" ') == "Foo"
         assert term[1].strip('" ') == "sh00000000"
+    assert isinstance(data, Generator)
 
 
 @pytest.mark.parametrize("heading_type", ["subjects", "names", "demographicTerms"])

@@ -3,7 +3,7 @@ import requests
 
 
 class LCTerm:
-    def __init__(self, id: str, old_heading: str, id_type: str):
+    def __init__(self, id: str, old_heading: str, id_type: str) -> None:
         self.id = id
         self.old_heading = old_heading
         self.id_type = id_type

@@ -1,11 +1,11 @@
 import datetime
 import csv
 import os
-from rich import print
+from typing import Generator
 from acc_lcsh_check.lcsh import LCTerm
 
 
-def read_data(file: str):
+def read_data(file: str) -> Generator:
     with open(file, "r") as csvfile:
         reader = csv.reader(csvfile)
         for item in reader:
