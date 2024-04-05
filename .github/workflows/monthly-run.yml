@@ -1,0 +1,48 @@
+name: monthly lcsh check
+on:
+  push: 
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+# on: 
+#   schedule: 
+#     - chron: * 9 1 * *
+jobs:
+  monthly-run:
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_MESSAGE: Monthly LCSH Check
+      COMMIT_AUTHOR: Charlotte Kostelic 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r dev-requirements.txt
+          python -m pip install -r requirements.txt
+
+      - name: Create branch
+        run: git checkout -b lcsh_check
+
+      - name: Run script
+        run: python monthly_lcsh_check.py
+
+
+      - name: Commit and push changed files
+        run:
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "charlottekostelic@bookops.org"
+          git add data/*
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
+          git request-pull 
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN}}
