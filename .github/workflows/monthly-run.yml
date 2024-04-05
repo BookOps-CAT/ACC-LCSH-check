@@ -12,9 +12,6 @@ on:
 jobs:
   monthly-run:
     runs-on: ubuntu-latest
-    env:
-      COMMIT_MESSAGE: Monthly LCSH Check
-      COMMIT_AUTHOR: Charlotte Kostelic 
     steps:
       - uses: actions/checkout@v4
 
@@ -38,9 +35,9 @@ jobs:
 
       - name: Commit and push changed files
         run:
-          git config --global user.name "${{ env.COMMIT_AUTHOR }}"
+          git config --global user.name "Charlotte Kostelic"
           git config --global user.email "charlottekostelic@bookops.org"
           git add data/*
-          git commit -a -m "${{ env.COMMIT_MESSAGE }}"
+          git commit -a -m "Monthly LCSH Check"
           git push
           git request-pull 
