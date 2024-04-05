@@ -38,9 +38,9 @@ jobs:
 
       - name: Commit and push changed files
         run:
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.name "${{ env.COMMIT_AUTHOR }}"
           git config --global user.email "charlottekostelic@bookops.org"
           git add data/*
-          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git commit -a -m "${{ env.COMMIT_MESSAGE }}"
           git push
           git request-pull 
