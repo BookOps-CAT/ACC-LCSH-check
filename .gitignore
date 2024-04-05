@@ -126,10 +126,8 @@ dmypy.json
 
 # localfiles/
 temp/
-tests/*.txt
-!tests/test_terms.txt
-data/deprecated_*
-data/changed_*
+tests/data/*
+!tests/data/*_in.csv
 
 
 # OSX
