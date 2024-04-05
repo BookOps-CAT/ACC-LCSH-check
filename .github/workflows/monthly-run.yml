@@ -44,5 +44,3 @@ jobs:
           git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
           git push
           git request-pull 
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN}}
