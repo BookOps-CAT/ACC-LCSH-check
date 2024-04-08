@@ -54,5 +54,5 @@ jobs:
           git add lcsh.log
           git add data/*
           git commit -a -m "Monthly LCSH Check"
-          git push --set-upstream origin monthly_check
-          git request-pull main monthly_check
+          git push https://github.com/BookOps-CAT/ACC-LCSH-check/ main
+          git request-pull monthly_check https://github.com/BookOps-CAT/ACC-LCSH-check/ main
