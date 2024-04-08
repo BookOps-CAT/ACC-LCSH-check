@@ -58,6 +58,7 @@ jobs:
 
       - name: Open PR
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           ASSIGNEES: charlottekostelic
           BODY: |
