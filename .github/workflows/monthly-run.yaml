@@ -1,11 +1,7 @@
 name: monthly lcsh check
-on:
-  push: 
-    branches:
-      - main
-# on: 
-#   schedule: 
-#     - chron: * 9 9 * *
+on: 
+  schedule: 
+    - chron: * 9 9 * *
 jobs:
   monthly-run:
     name: Run monthly LCSH check
@@ -55,20 +51,3 @@ jobs:
           git add data/*
           git commit -a -m "Monthly LCSH Check"
           git push --set-upstream origin monthly_check
-
-      - name: Open PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          ASSIGNEES: charlottekostelic
-          BODY: |
-            ## Monthly LCSH check:
-            ### Changed
-            + lcsh.log
-            ### Added
-            + data/* 
-        run: |
-          gh pr create \
-            --repo ${{ github.repository }} \
-            --assignee "$ASSIGNEES" \
-            --body "$BODY"
