@@ -74,5 +74,12 @@ class LogSession:
 
     def rename_files(self):
         today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
-        os.rename(self.infile, f"{self.infile.split('_')[0]}_{today}.csv")
-        os.rename(self.outfile, self.infile)
+        if os.path.exists(f"{self.infile.split('_')[0]}_{today}.csv"):
+            os.remove(f"{self.infile.split('_')[0]}_{today}.csv")
+        if len(self.session_data["deprecated_terms"]) != 0:
+            os.rename(self.infile, f"{self.infile.split('_')[0]}_{today}.csv")
+        elif len(self.session_data["deprecated_terms"]) != 0:
+            os.rename(self.infile, f"{self.infile.split('_')[0]}_{today}.csv")
+        else:
+            os.remove(f"{self.infile}")
+            os.rename(self.outfile, self.infile)
