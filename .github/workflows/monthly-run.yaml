@@ -48,6 +48,15 @@ jobs:
             + See lcsh.log for lists of changed and deprecated terms
 
       - name: Commit and push changed files
+        run: |
+          git config user.name "Charlotte Kostelic"
+          git config user.email "charlottekostelic@bookops.org"
+          git add lcsh.log
+          git add data/*
+          git commit -a -m "Monthly LCSH Check"
+          git push --set-upstream origin monthly_check
+          
+      - name: Open PR
         env:
           GH_REPO: ${{ github.repository }}
           ASSIGNEES: charlottekostelic
@@ -56,14 +65,7 @@ jobs:
             ### Changed
             + lcsh.log
             ### Added
-            + data/*
-        run: |
-          git config user.name "Charlotte Kostelic"
-          git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log
-          git add data/*
-          git commit -a -m "Monthly LCSH Check"
-          git push --set-upstream origin monthly_check
+            + data/* 
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
