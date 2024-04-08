@@ -1,11 +1,10 @@
 name: monthly lcsh check
-on:
   push: 
     branches:
-      - github-actions
+      - main
 # on: 
 #   schedule: 
-#     - chron: * 9 1 * *
+#     - chron: * 9 9 * *
 jobs:
   monthly-run:
     name: Run monthly LCSH check
@@ -55,3 +54,4 @@ jobs:
           git add data/*
           git commit -a -m "Monthly LCSH Check"
           git push --set-upstream origin monthly_check
+          git request-pull main monthly_check
