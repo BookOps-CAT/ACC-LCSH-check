@@ -54,8 +54,8 @@ jobs:
 
       - name: Commit and push changed files
         run:
-          git config --global user.name "Charlotte Kostelic"
-          git config --global user.email "charlottekostelic@bookops.org"
+          git config user.name "Charlotte Kostelic"
+          git config user.email "charlottekostelic@bookops.org"
           git add data/*
           git commit -a -m "Monthly LCSH Check"
           git push
