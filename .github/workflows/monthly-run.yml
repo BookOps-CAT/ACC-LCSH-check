@@ -10,8 +10,6 @@ jobs:
   monthly-run:
     name: Run monthly LCSH check
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +33,7 @@ jobs:
 
       - name: Create issue
         run: |
-          git diff --quiet HEAD main -- data/ || new_issue_url=$(gh issue create \
+          git diff --quiet -- data/ || new_issue_url=$(gh issue create \
             --title "$TITLE" \
             --assignee "$ASSIGNEES" \
             --body "$BODY")
