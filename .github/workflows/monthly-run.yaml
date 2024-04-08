@@ -1,4 +1,5 @@
 name: monthly lcsh check
+on:
   push: 
     branches:
       - main
