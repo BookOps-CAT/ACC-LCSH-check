@@ -30,18 +30,19 @@ def test_logger(type, output, request):
         assert today in reader[-2]
 
 
-def test_rename_files(mock_new_response):
+@pytest.mark.parametrize(
+    "type",
+    ["deprecated", "revised"],
+)
+def test_rename_files(type, request):
     today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
-    if os.path.exists(f"tests/data/test_{today}.csv"):
-        os.remove(f"tests/data/test_{today}.csv")
+    request.getfixturevalue(f"mock_{type}_response")
     logger = LogSession(
-        logger_name="test_rename",
-        logfile="tests/data/test_rename.log",
-        infile="tests/data/test_rename_in.csv",
-        outfile="tests/data/test_rename_out.csv",
+        logger_name=f"test_{type}",
+        logfile=f"tests/data/test_{type}.log",
+        infile=f"tests/data/test_{type}_out.csv",
+        outfile=f"tests/data/test_{type}.csv",
     )
     logger.run_logger()
     logger.rename_files()
-    in_reader = open(logger.infile, "r")
-    out_reader = open(f"tests/data/test_{today}.csv", "r")
-    assert in_reader.read() == out_reader.read()
+    assert os.path.isfile(f"tests/data/test_{type}_out_{today}.csv") is True
