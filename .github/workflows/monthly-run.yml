@@ -41,4 +41,4 @@ jobs:
           git diff data/
           git add data/*
           git commit -a -m "Monthly LCSH Check"
-          git push
+          git push --set-upstream origin lcsh_check
