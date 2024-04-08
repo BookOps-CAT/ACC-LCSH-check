@@ -2,10 +2,7 @@ name: monthly lcsh check
 on:
   push: 
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - github-actions
 # on: 
 #   schedule: 
 #     - chron: * 9 1 * *
@@ -13,8 +10,6 @@ jobs:
   monthly-run:
     name: Run monthly LCSH check
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -30,19 +25,33 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Create branch
-        run: git checkout -b lcsh_check
+        run: git checkout -b monthly_check
 
       - name: Run script
         run: |
           python monthly_lcsh_check.py
-          if [[]]
+
+      - name: Create issue
+        run: |
+          git diff --quiet -- data/ || new_issue_url=$(gh issue create \
+            --title "$TITLE" \
+            --assignee "$ASSIGNEES" \
+            --body "$BODY")
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TITLE: Changes to ACC LCSH
+          ASSIGNEES: charlottekostelic
+          BODY: |
+            ### Changed:
+            + Updated list of terms in: data/acc_in.csv
+            + See lcsh.log for lists of changed and deprecated terms
 
       - name: Commit and push changed files
-        run:
+        run: |
           git config user.name "Charlotte Kostelic"
           git config user.email "charlottekostelic@bookops.org"
           git add lcsh.log
-          git diff data/
           git add data/*
           git commit -a -m "Monthly LCSH Check"
-          git push
+          git push --set-upstream origin monthly_check

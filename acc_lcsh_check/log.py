@@ -76,5 +76,11 @@ class LogSession:
         today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
         if os.path.exists(f"{self.infile.split('.')[0]}_{today}.csv"):
             os.remove(f"{self.infile.split('.')[0]}_{today}.csv")
-        os.rename(self.infile, f"{self.infile.split('.')[0]}_{today}.csv")
-        os.rename(self.outfile, f"{self.infile}")
+        if len(self.session_data["deprecated_terms"]) == 0 and len(
+            self.session_data["revised_terms"]
+                ) == 0:
+            os.remove(self.infile)
+            os.rename(self.outfile, f"{self.infile}")
+        else:
+            os.rename(self.infile, f"{self.infile.split('.')[0]}_{today}.csv")
+            os.rename(self.outfile, f"{self.infile}")
