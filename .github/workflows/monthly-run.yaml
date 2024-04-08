@@ -55,7 +55,7 @@ jobs:
           git add data/*
           git commit -a -m "Monthly LCSH Check"
           git push --set-upstream origin monthly_check
-          
+
       - name: Open PR
         env:
           GH_REPO: ${{ github.repository }}
@@ -66,6 +66,7 @@ jobs:
             + lcsh.log
             ### Added
             + data/* 
+        run: |
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
