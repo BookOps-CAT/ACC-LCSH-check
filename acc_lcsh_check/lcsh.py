@@ -3,25 +3,46 @@ import requests
 
 
 class LCTerm:
-    def __init__(self, id: str, old_heading: str, id_type: str):
+    """
+    A class that defines a LC subject heading.
+    """
+
+    def __init__(self, id: str, old_heading: str) -> None:
         self.id = id
         self.old_heading = old_heading
-        self.id_type = id_type
         self.format = ".skos.json"
         self.url = "https://id.loc.gov/authorities/"
 
+        self._get_id_type()
+
         self.query = f"{self.url + self.id_type + '/' + self.id}"
+
         self._get_skos_json()
         self._get_current_heading()
         self._get_changes()
         self._compare_headings()
 
+    def _get_id_type(self):
+        if self.id[:2] == "sh":
+            self.id_type = "subjects"
+        elif self.id[:2] == "dg":
+            self.id_type = "demographicTerms"
+        elif self.id[:1] == "n":
+            self.id_type = "names"
+
     def _get_skos_json(self):
+        """
+        Send request to id.loc.gov and get the response in .skos.json format.
+        """
+
         skos_json_response = requests.get(f"{self.query + self.format}")
         self.skos_json = skos_json_response.json()
         return self.skos_json
 
     def _get_current_heading(self):
+        """
+        Parse response from id.loc.gov and get current heading.
+        """
         for item in self.skos_json:
             if "id.loc.gov/authorities/" in item["@id"]:
                 if "http://www.w3.org/2004/02/skos/core#prefLabel" in item:
@@ -34,6 +55,10 @@ class LCTerm:
                     ][0]["@value"]
 
     def _get_changes(self):
+        """
+        Parse response from id.loc.gov and determine if record has been changed
+        in last month or if it is deprecated.
+        """
         today = datetime.datetime.now()
         self.changes = []
         for item in self.skos_json:
@@ -60,17 +85,23 @@ class LCTerm:
                 change_date = datetime.datetime.strptime(
                     change["change_date"], "%Y-%m-%dT%H:%M:%S"
                 )
-                if change_date >= today - datetime.timedelta(days=30):
+                if change_date >= today - datetime.timedelta(days=31):
                     self.recent_change = True
                 else:
                     self.recent_change = False
                 if "deprecated" in change["change_reason"]:
                     self.is_deprecated = True
+                    self.deprecated_date = change_date
                 else:
                     self.is_deprecated = False
+                    self.deprecated_date = None
 
     def _compare_headings(self):
+        """
+        Sometimes headings are marked as revised in id.loc.gov without changing the
+        heading. This function checks if the heading is the same as the ACC term.
+        """
         if str(self.current_heading).lower() != str(self.old_heading).lower():
-            self.check_heading = True
+            self.revised_heading = True
         else:
-            self.check_heading = False
+            self.revised_heading = False

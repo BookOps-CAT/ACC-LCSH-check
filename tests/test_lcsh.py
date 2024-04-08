@@ -4,23 +4,23 @@ from acc_lcsh_check.lcsh import LCTerm
 
 
 @pytest.mark.parametrize(
-    "heading_id, heading_type, heading_str",
+    "heading_id, heading_str",
     [
-        ("111", "subjects", "foo"),
-        ("222", "names", "bar"),
-        ("333", "demographicTerms", "baz"),
+        ("sh111", "foo"),
+        ("na222", "bar"),
+        ("dg333", "baz"),
     ],
 )
-def test_current_term(
-    heading_id, heading_str, heading_type, mock_changed_skos_json_response
-):
-    term = LCTerm(id=heading_id, old_heading=heading_str, id_type=heading_type)
+def test_revised_term(heading_id, heading_str, mock_revised_response):
+    term = LCTerm(
+        id=heading_id,
+        old_heading=heading_str,
+    )
     assert term.id == heading_id
     assert term.old_heading == heading_str
-    assert term.id_type == heading_type
     assert term.format == ".skos.json"
     assert term.url == "https://id.loc.gov/authorities/"
-    assert term.query == f"{term.url + heading_type + '/' + heading_id}"
+    assert term.query == f"{term.url + term.id_type + '/' + heading_id}"
     assert term.current_heading == "Spam"
     assert term.changes[0] == {
         "change_reason": "revised",
@@ -28,24 +28,19 @@ def test_current_term(
     }
     assert term.recent_change is True
     assert term.is_deprecated is False
-    assert term.check_heading is True
+    assert term.revised_heading is True
 
 
 @pytest.mark.parametrize(
-    "heading_id, heading_type",
-    [
-        ("111", "subjects"),
-        ("222", "names"),
-        ("333", "demographicTerms"),
-    ],
+    "heading_id",
+    ["sh111", "na222", "dg333"],
 )
-def test_deprecated_term(heading_id, heading_type, mock_deprecated_skos_json_response):
-    term = LCTerm(id=heading_id, old_heading="Foo", id_type=heading_type)
+def test_deprecated_term(heading_id, mock_deprecated_response):
+    term = LCTerm(id=heading_id, old_heading="Foo")
     assert term.id == heading_id
-    assert term.id_type == heading_type
     assert term.format == ".skos.json"
     assert term.url == "https://id.loc.gov/authorities/"
-    assert term.query == f"{term.url + heading_type + '/' + heading_id}"
+    assert term.query == f"{term.url + term.id_type + '/' + heading_id}"
     assert term.current_heading == "Bar"
     assert term.changes[0] == {
         "change_reason": "deprecated",
@@ -53,25 +48,20 @@ def test_deprecated_term(heading_id, heading_type, mock_deprecated_skos_json_res
     }
     assert term.recent_change is False
     assert term.is_deprecated is True
-    assert term.check_heading is True
+    assert term.revised_heading is True
 
 
 @pytest.mark.parametrize(
-    "heading_id, heading_type",
-    [
-        ("111", "subjects"),
-        ("222", "names"),
-        ("333", "demographicTerms"),
-    ],
+    "heading_id",
+    ["sh111", "na222", "dg333"],
 )
-def test_new_term(heading_id, heading_type, mock_new_skos_json_response):
-    term = LCTerm(id=heading_id, old_heading="Foo", id_type=heading_type)
+def test_new_term(heading_id, mock_new_response):
+    term = LCTerm(id=heading_id, old_heading="Foo")
     assert term.id == heading_id
-    assert term.id_type == heading_type
     assert term.format == ".skos.json"
     assert term.url == "https://id.loc.gov/authorities/"
-    assert term.query == f"{term.url + heading_type + '/' + heading_id}"
+    assert term.query == f"{term.url + term.id_type + '/' + heading_id}"
     assert term.current_heading == "Foo"
     assert term.recent_change is False
     assert term.is_deprecated is False
-    assert term.check_heading is False
+    assert term.revised_heading is False

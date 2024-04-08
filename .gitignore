@@ -126,6 +126,10 @@ dmypy.json
 
 # localfiles/
 temp/
+tests/data/*
+!tests/data/*_in.csv
+!lcsh.log
+
 
 # OSX
 .DS_Store
