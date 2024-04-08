@@ -11,7 +11,10 @@ on:
 #     - chron: * 9 1 * *
 jobs:
   monthly-run:
+    name: Run monthly LCSH check
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -33,6 +36,22 @@ jobs:
         run: python monthly_lcsh_check.py
 
 
+      - name: Create issue
+        run: |
+          new_issue_url=$(gh issue create \
+            --title "$TITLE" \
+            --assignee "$ASSIGNEES" \
+            --body "$BODY")
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TITLE: LCSH changed
+          ASSIGNEES: charlottekostelic
+          BODY: |
+            ### Changed:
+            + Updated list of terms in: data/acc_in.csv
+            + See data/lcsh.log for lists of changed and deprecated terms
+
       - name: Commit and push changed files
         run:
           git config --global user.name "Charlotte Kostelic"
@@ -40,4 +59,3 @@ jobs:
           git add data/*
           git commit -a -m "Monthly LCSH Check"
           git push
-          git request-pull 
