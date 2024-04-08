@@ -48,11 +48,23 @@ jobs:
             + See lcsh.log for lists of changed and deprecated terms
 
       - name: Commit and push changed files
+        env:
+          GH_REPO: ${{ github.repository }}
+          ASSIGNEES: charlottekostelic
+          BODY: |
+            ## Monthly LCSH check:
+            ### Changed
+            + lcsh.log
+            ### Added
+            + data/*
         run: |
           git config user.name "Charlotte Kostelic"
           git config user.email "charlottekostelic@bookops.org"
           git add lcsh.log
           git add data/*
           git commit -a -m "Monthly LCSH Check"
-          git push https://github.com/BookOps-CAT/ACC-LCSH-check/ main
-          git request-pull monthly_check https://github.com/BookOps-CAT/ACC-LCSH-check/ main
+          git push --set-upstream origin monthly_check
+          gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --body "$BODY"
