@@ -2,10 +2,7 @@ name: monthly lcsh check
 on:
   push: 
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - github-actions
 # on: 
 #   schedule: 
 #     - chron: * 9 1 * *
@@ -35,7 +32,6 @@ jobs:
       - name: Run script
         run: |
           python monthly_lcsh_check.py
-          if [[]]
 
       - name: Commit and push changed files
         run:
