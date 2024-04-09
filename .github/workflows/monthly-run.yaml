@@ -59,4 +59,4 @@ jobs:
           git add lcsh.log
           git add data/*
           git commit -a -m "LCSH Check $DATE"
-          git push --set-upstream origin $BRANCH_NAME
+          git push --set-upstream origin monthly_check_$DATE
