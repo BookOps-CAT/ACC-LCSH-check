@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '40/5 * 9 * *'
+    - cron: '* 9 10 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -24,7 +24,7 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Create branch
-        run: git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M-%S")
+        run: git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M")
 
       - name: Run script
         run: |
@@ -36,8 +36,8 @@ jobs:
           git config user.email "charlottekostelic@bookops.org"
           git add lcsh.log
           git add data/*
-          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M-%S")"
-          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M-%S")
+          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
 
       - name: Parse changes
         run: |
@@ -55,7 +55,7 @@ jobs:
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M-%S"))" \
+            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M"))" \
             --body "$PR_BODY")
 
       - name: Create Issue
