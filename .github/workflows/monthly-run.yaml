@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '40/5 20 9 * *'
+    - cron: '40/5 * 9 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
