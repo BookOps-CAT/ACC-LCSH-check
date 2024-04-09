@@ -24,7 +24,6 @@ jobs:
       - name: Set date and branch name
         run: |
           echo "DATE=$(date "+%Y%m")" >> $GITHUB_ENV
-          echo "BRANCH_NAME=$(monthly_check_${DATE})" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -33,7 +32,7 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Create branch
-        run: git checkout -b $BRANCH_NAME
+        run: git checkout -b monthly_check_$DATE
 
       - name: Run script
         run: |
