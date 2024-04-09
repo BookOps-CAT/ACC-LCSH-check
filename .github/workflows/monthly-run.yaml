@@ -23,7 +23,7 @@ jobs:
 
       - name: Set date and branch name
         run: |
-          echo "${{ env.DATE }}=$(date + "%Y%m")" >> $GITHUB_ENV
+          echo "${{ env.DATE }}=$(date "+%Y%m")" >> $GITHUB_ENV
           echo "${{ env.BRANCH_NAME}}=$(monthly_check_${DATE})" >> $GITHUB_ENV
 
       - name: Install dependencies
