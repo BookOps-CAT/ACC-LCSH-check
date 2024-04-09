@@ -33,7 +33,7 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Create branch
-        run: git checkout -b ${BRANCH_NAME}
+        run: git checkout -b ${{ env.BRANCH_NAME }}
 
       - name: Run script
         run: |
