@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '* 15 9 * *'
+    - cron: '20 15 9 * *'
 
 jobs:
   monthly-run:
@@ -47,13 +47,13 @@ jobs:
 
       - name: Create PR and issue
         run: |
-          git diff --quiet -- data/ \
-            && pr_url=$(gh pr create \
+          git diff --quiet -- data/ && pr_url=$(gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
             --title "Monthly LCSH check ($DATE)" \
             --body "$PR_NO_ADD") \
-            || new_issue_url=$(gh issue create \
+
+          git diff --quiet -- data/ || new_issue_url=$(gh issue create \
             --title "$TITLE" \
             --assignee "$ASSIGNEES" \
             --body "$ISSUE_BODY") \
