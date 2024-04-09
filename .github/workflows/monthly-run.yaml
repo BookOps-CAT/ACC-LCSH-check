@@ -1,16 +1,16 @@
 name: monthly lcsh check
+
 on: 
   schedule: 
-    - cron: '40 15 9 * *'
-
+    - cron: '40 20 9 * *'
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_REPO: ${{ github.repository }}
+  ASSIGNEES: charlottekostelic
 jobs:
   monthly-run:
     name: Run monthly LCSH check
     runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GH_REPO: ${{ github.repository }}
-      ASSIGNEES: charlottekostelic
     steps:
       - uses: actions/checkout@v4
 
@@ -19,18 +19,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Set date
-        run: |
-          echo "DATE=$(date "+%Y%m%d-%H-%M-%S")" >> $GITHUB_ENV
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r dev-requirements.txt
           python -m pip install -r requirements.txt
 
       - name: Create branch
-        run: git checkout -b monthly_check_$DATE
+        run: git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M-%S")
 
       - name: Run script
         run: |
@@ -42,38 +37,39 @@ jobs:
           git config user.email "charlottekostelic@bookops.org"
           git add lcsh.log
           git add data/*
-          git commit -a -m "LCSH Check $DATE"
-          git push --set-upstream origin monthly_check_$DATE
+          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M-%S")"
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M-%S")
 
-      - name: Create PR and issue
+      - name: Parse changes
         run: |
-          git diff --quiet -- data/ && pr_url=$(gh pr create \
+          echo "CHANGED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+
+      - name: Create PR
+        run: |
+          echo "### Changed" >> $PR_BODY
+          if [[ ! -z "$CHANGED" ]];
+            echo "### Added" >> $PR_BODY
+            echo "+ New infile is: data/acc_in.csv" >> $PR_BODY
+            echo "+ Old infile is: data/acc_in_$DATE.csv" >> $PR_BODY
+
+          gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($DATE)" \
-            --body "$PR_NO_ADD")
+            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M-%S"))" \
+            --body "$PR_BODY")
 
-          git diff --quiet -- data/ || new_issue_url=$(gh issue create \
-            --title "$TITLE" \
-            --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY") 
+      - name: Create Issue
+        if: ${{ contains(fromJSON(*), env.CHANGED) == true || contains(fromJSON(*), env.DEPRECATED) == true}}
+        run: |
+          if [[ ! -z "$CHANGED" ]];
+            echo "### Changed" >> $ISSUE_BODY
+            echo $CHANGED >> $ISSUE_BODY
+          if [[ ! -z "$DEPRECATED" ]];
+            echo "### Deprecated" >> $ISSUE_BODY
+            echo $DEPRECATED >> $ISSUE_BODY
 
-          git diff --quiet -- data/ ||  new_terms_pr_url=$(gh pr create \
-            --repo ${{ github.repository }} \
+          gh issue create \
+            --title "Changes to ACC LCSH" \
             --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($DATE)" \
-            --body "$PR_ADD")
-        env:
-          ISSUE_TITLE: Changes to ACC LCSH
-          ISSUE_BODY: |
-            ### Changed:
-            + Updated list of terms in: data/acc_in.csv
-            + See lcsh.log for lists of changed and deprecated terms
-          PR_ADD: |
-            ### Changed
-            + lcsh.log
-            ### Added
-            + data/* 
-          PR_NO_ADD: |
-            ### Changed
-            + lcsh.log
+            --body "$ISSUE_BODY")
