@@ -51,7 +51,7 @@ jobs:
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
             --title "Monthly LCSH check ($DATE)" \
-            --body "$PR_NO_ADD") \
+            --body "$PR_NO_ADD")
 
           git diff --quiet -- data/ || new_issue_url=$(gh issue create \
             --title "$TITLE" \
