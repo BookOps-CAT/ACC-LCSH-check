@@ -13,6 +13,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
+      ASSIGNEES: charlottekostelic
     steps:
       - uses: actions/checkout@v4
 
@@ -21,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Set date and branch name
+      - name: Set date
         run: |
           echo "DATE=$(date "+%Y%m")" >> $GITHUB_ENV
 
@@ -38,20 +39,6 @@ jobs:
         run: |
           python monthly_lcsh_check.py
 
-      - name: Create issue
-        run: |
-          git diff --quiet -- data/ || new_issue_url=$(gh issue create \
-            --title "$TITLE" \
-            --assignee "$ASSIGNEES" \
-            --body "$BODY")
-        env:
-          TITLE: Changes to ACC LCSH
-          ASSIGNEES: charlottekostelic
-          BODY: |
-            ### Changed:
-            + Updated list of terms in: data/acc_in.csv
-            + See lcsh.log for lists of changed and deprecated terms
-
       - name: Commit and push changed files
         run: |
           git config user.name "Charlotte Kostelic"
@@ -60,3 +47,32 @@ jobs:
           git add data/*
           git commit -a -m "LCSH Check $DATE"
           git push --set-upstream origin monthly_check_$DATE
+
+      - name: Create PR and issue
+        run: |
+          git diff --quiet -- data/ && pr_url=$(gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --body "$PR_NO_ADDITIONS") || new_issue_url=$(gh issue create \
+            --title "$TITLE" \
+            --assignee "$ASSIGNEES" \
+            --body "$ISSUE_BODY") && new_terms_pr_url=$(gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --body "$PR_ADDITIONS")
+        env:
+          TITLE: Changes to ACC LCSH
+          ISSUE_BODY: |
+            ### Changed:
+            + Updated list of terms in: data/acc_in.csv
+            + See lcsh.log for lists of changed and deprecated terms
+          PR_ADDITIONS: |
+            ## Monthly LCSH check ($DATE):
+            ### Changed
+            + lcsh.log
+            ### Added
+            + data/* 
+          PR_NO_ADDITIONS: |
+            ## Monthly LCSH check ($DATE):
+            ### Changed
+            + lcsh.log
