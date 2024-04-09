@@ -50,29 +50,32 @@ jobs:
 
       - name: Create PR and issue
         run: |
-          git diff --quiet -- data/ && pr_url=$(gh pr create \
+          git diff --quiet -- data/ \
+            && pr_url=$(gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
-            --body "$PR_NO_ADDITIONS") || new_issue_url=$(gh issue create \
+            --title "Monthly LCSH check ($DATE)" \
+            --body "$PR_NO_ADD") \
+            || new_issue_url=$(gh issue create \
             --title "$TITLE" \
             --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY") && new_terms_pr_url=$(gh pr create \
+            --body "$ISSUE_BODY") \
+            && new_terms_pr_url=$(gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
-            --body "$PR_ADDITIONS")
+            --title "Monthly LCSH check ($DATE)" \
+            --body "$PR_ADD")
         env:
-          TITLE: Changes to ACC LCSH
+          ISSUE_TITLE: Changes to ACC LCSH
           ISSUE_BODY: |
             ### Changed:
             + Updated list of terms in: data/acc_in.csv
             + See lcsh.log for lists of changed and deprecated terms
-          PR_ADDITIONS: |
-            ## Monthly LCSH check ($DATE):
+          PR_ADD: |
             ### Changed
             + lcsh.log
             ### Added
             + data/* 
-          PR_NO_ADDITIONS: |
-            ## Monthly LCSH check ($DATE):
+          PR_NO_ADD: |
             ### Changed
             + lcsh.log
