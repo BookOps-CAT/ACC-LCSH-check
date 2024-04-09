@@ -59,7 +59,7 @@ jobs:
             --body "$PR_BODY")
 
       - name: Create Issue
-        if: ${{ contains(fromJSON(*), env.CHANGED) == true || contains(fromJSON(*), env.DEPRECATED) == true}}
+        if: ${{ contains(env.CHANGED, " ") == true || contains(env.DEPRECATED, " ") == true }}
         run: |
           if [[ ! -z "$CHANGED" ]];
             echo "### Changed" >> $ISSUE_BODY
