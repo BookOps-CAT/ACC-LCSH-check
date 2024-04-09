@@ -1,9 +1,6 @@
-import datetime
-
 from acc_lcsh_check.log import LogSession
 
 if __name__ == "__main__":
-    today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
     logger = LogSession(
         logger_name="monthly_lcsh_check",
         logfile="lcsh.log",

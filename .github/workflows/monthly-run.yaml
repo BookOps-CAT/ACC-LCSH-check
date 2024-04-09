@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '20 15 9 * *'
+    - cron: '20 30 9 * *'
 
 jobs:
   monthly-run:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Set date
         run: |
-          echo "DATE=$(date "+%Y%m")" >> $GITHUB_ENV
+          echo "DATE=$(date "+%Y%m%d%T")" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
