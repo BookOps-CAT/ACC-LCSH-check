@@ -80,5 +80,5 @@ jobs:
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M"))" \
+            --title "Monthly LCSH check ($(date '+%Y%m%d-%H-%M'))" \
             --body "$PR_BODY")
