@@ -2,7 +2,7 @@ name: monthly lcsh check
 on:
   push: 
     branches:
-      - main
+      - github-actions
 # on: 
 #   schedule: 
 #     - cron: '* 9 15 * *'
@@ -32,11 +32,21 @@ jobs:
           git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M")
           python monthly_lcsh_check.py
 
-      - name: Parse changes
-        id: changes
+      - name: Commit and push changed files
         run: |
-          echo "CHANGED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
-          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
+          git config user.name "Charlotte Kostelic"
+          git config user.email "charlottekostelic@bookops.org"
+          git add lcsh.log
+          git add data/*
+          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
+
+          echo "CHANGED=$(git diff --quiet -- data/ && 'false' || 'true')" >> $GITHUB_ENV
+
+      - name: Parse changes
+        if: ${{ '$CHANGED' == 'true' }}
+        run: |
+          echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           
       - name: Create PR text
         run: |
@@ -49,44 +59,26 @@ jobs:
           
           echo "PR_BODY<<EOF" >> $GITHUB_ENV
           echo "PR_CHANGED" >> $GITHUB_ENV
-          echo ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' && '$PR_ADDED' }} >> $GITHUB_ENV
+          echo ${{ '$CHANGED' == 'true' && '$PR_ADDED' }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Create Issue text
-        if: ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }}
+      - name: Create Issue
+        if: ${{ '$CHANGED' == 'true' }}
         run: |
           ISSUE_CHANGED="### Changed\n
                          + ${{ steps.changes.outputs.CHANGED }}"
           ISSUE_DEPRECATED="### Deprecated\n
                          + ${{ steps.changes.outputs.DEPRECATED }}"
           echo "ISSUE_BODY<<EOF" >> $GITHUB_ENV
-          echo ${{ steps.changes.outputs.CHANGED != '{ }' && '$ISSUE_CHANGED' }} >> $GITHUB_ENV
-          echo ${{ steps.changes.outputs.DEPRECATED != '{ }' && '$ISSUE_DEPRECATED' }} >> $GITHUB_ENV
+          echo ${{ '$REVISED' != '{ }' && '$ISSUE_CHANGED' }} >> $GITHUB_ENV
+          echo ${{ '$DEPRECATED' != '{ }' && '$ISSUE_DEPRECATED' }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Commit and push changed files
-        if: ${{ contains(env, 'PR_BODY') == 'true' }}
-        run: |
-          git config user.name "Charlotte Kostelic"
-          git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log
-          git add data/*
-          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
-          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
-
       - name: Create PR
-        if: ${{ contains(env, 'PR_BODY') == 'true' }}
         run: |
+          git push --set-upstream origin monthly_check_$DATE
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
             --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M"))" \
             --body "$PR_BODY")
-
-      - name: Create Issue
-        if: ${{ contains(env, 'ISSUE_BODY') }}
-        run: |
-          gh issue create \
-            --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
-            --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY")
