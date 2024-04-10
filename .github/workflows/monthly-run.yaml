@@ -23,15 +23,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Create branch
-        run: git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M")
-
-      - name: Run script
+      - name: Create branch, run script, commit and push changed files
         run: |
+          git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M")
           python monthly_lcsh_check.py
-
-      - name: Commit and push changed files
-        run: |
           git config user.name "Charlotte Kostelic"
           git config user.email "charlottekostelic@bookops.org"
           git add lcsh.log
