@@ -42,17 +42,17 @@ jobs:
 
       - name: Create PR
         run: |
-          'PR_ADDED << EOF'
+          echo 'PR_ADDED << EOF'
           ### Added
           + New infile is: data/acc_in.csv
           + Old infile is: data/acc_in_$(date "+%Y%m%d").csv
-          EOF
+          echo EOF
           
-          'PR_BODY << EOF'
+          echo 'PR_BODY << EOF'
           [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ]]
           ### Changed
           + lcsh.log updated with data from workflow run on $(date "+%D")
-          EOF
+          echo EOF
           
           gh pr create \
             --repo ${{ github.repository }} \
@@ -63,20 +63,20 @@ jobs:
       - name: Create Issue
         if: ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }}
         run: |
-          'ISSUE_CHANGED << EOF'
+          echo 'ISSUE_CHANGED << EOF'
           ### Changed
           + ${{ steps.changes.outputs.CHANGED }}
-          EOF
+          echo EOF
 
-          'ISSUE_DEPRECATED << EOF'
+          echo 'ISSUE_DEPRECATED << EOF'
           ### Deprecated
           + ${{ steps.changes.outputs.DEPRECATED }}
-          EOF
+          echo EOF
 
-          'ISSUE_BODY << EOF'
+          echo 'ISSUE_BODY << EOF'
           [[ ! -z ${{ steps.changes.outputs.CHANGED }} && $ISSUE_CHANGED]];
           [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} && $ISSUE_DEPRECATED]];
-          EOF
+          echo EOF
 
           gh issue create \
             --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
