@@ -48,37 +48,39 @@ jobs:
           echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           
-      - name: Create PR text
+      - name: Create PR and Issue
+        if: ${{ '$CHANGED' == 'true' }}
         run: |
-          PR_CHANGED="### Changed\n
-                     + lcsh.log updated with data from workflow run on $(date '+%D')"
-          PR_ADDED="\n
+          PR_ADDED="### Changed\n
+                     + lcsh.log updated with data from workflow run on $(date '+%D')\n
                     ### Added\n
                      + New infile is: data/acc_in.csv\n
                      + Old infile is: data/acc_in_$(date '+%Y%m%d')"
           
-          echo "PR_BODY<<EOF" >> $GITHUB_ENV
-          echo "PR_CHANGED" >> $GITHUB_ENV
-          echo ${{ '$CHANGED' == 'true' && '$PR_ADDED' }} >> $GITHUB_ENV
+          echo "PR_ADDED<<EOF" >> $GITHUB_ENV
+          echo "$PR_ADDED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Create Issue
-        if: ${{ '$CHANGED' == 'true' }}
-        run: |
-          ISSUE_CHANGED="### Changed\n
-                         + ${{ steps.changes.outputs.CHANGED }}"
-          ISSUE_DEPRECATED="### Deprecated\n
-                         + ${{ steps.changes.outputs.DEPRECATED }}"
-          echo "ISSUE_BODY<<EOF" >> $GITHUB_ENV
-          echo ${{ '$REVISED' != '{ }' && '$ISSUE_CHANGED' }} >> $GITHUB_ENV
-          echo ${{ '$DEPRECATED' != '{ }' && '$ISSUE_DEPRECATED' }} >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Create PR
-        run: |
           git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
             --title "Monthly LCSH check ($(date '+%Y%m%d-%H-%M'))" \
-            --body "$PR_BODY"
+            --body "$PR_ADDED"
+
+      - name: Create PR
+        if: ${{ '$CHANGED' == 'false' }}
+        run: |
+          PR_CHANGED="### Changed\n
+                     + lcsh.log updated with data from workflow run on $(date '+%D')\n
+          
+          echo "PR_CHANGED<<EOF" >> $GITHUB_ENV
+          echo "$PR_CHANGED" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
+          gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --title "Monthly LCSH check ($(date '+%Y%m%d-%H-%M'))" \
+            --body "$PR_CHANGED"
