@@ -81,4 +81,4 @@ jobs:
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
             --title "Monthly LCSH check ($(date '+%Y%m%d-%H-%M'))" \
-            --body "$PR_BODY")
+            --body "$PR_BODY"
