@@ -39,7 +39,6 @@ jobs:
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
           
       - name: Create PR text
-        id: pr_text
         run: |
           PR_CHANGED="### Changed\n
                      + lcsh.log updated with data from workflow run on $(date '+%D')"
@@ -51,4 +50,16 @@ jobs:
           echo "PR_BODY<<EOF" >> $GITHUB_ENV
           echo "PR_CHANGED" >> $GITHUB_ENV
           echo ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' && '$PR_ADDED' }} >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create Issue text
+        if: ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }}
+        run: |
+          ISSUE_CHANGED="### Changed\n
+                         + ${{ steps.changes.outputs.CHANGED }}"
+          ISSUE_DEPRECATED="### Deprecated\n
+                         + ${{ steps.changes.outputs.DEPRECATED }}"
+          echo "ISSUE_BODY<<EOF" >> $GITHUB_ENV
+          echo ${{ steps.changes.outputs.CHANGED != "{}" && $ISSUE_CHANGED }} >> $GITHUB_ENV
+          echo ${{ steps.changes.outputs.DEPRECATED != "{}" && $ISSUE_DEPRECATED }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
