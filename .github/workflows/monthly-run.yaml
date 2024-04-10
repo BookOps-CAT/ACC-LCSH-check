@@ -41,5 +41,6 @@ jobs:
       - name: Create PR text
         id: pr_text
         run: |
-          echo -e "PR_ADDED=$('### Added\n + New infile is: data/acc_in.csv\n + Old infile is: data/acc_in_$(date "+%Y%m%d")\n')" 
-          echo -e "PR_BODY=$([[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ]]'### Changed\n + lcsh.log updated with data from workflow run on $(date "+%D")') >> $GITHUB_OUTPUT
+          PR_ADDED='### Added\n + New infile is: data/acc_in.csv\n + Old infile is: data/acc_in_$(date "+%Y%m%d")\n'
+          PR_CHANGED='### Changed\n + lcsh.log updated with data from workflow run on $(date "+%D")'
+          echo -e "PR_BODY=$([[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ; $PR_CHANGED ]]) >> $GITHUB_OUTPUT
