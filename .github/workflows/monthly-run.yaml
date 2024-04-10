@@ -5,7 +5,7 @@ on:
       - testing
 # on: 
 #   schedule: 
-#     - cron: '1/5 18-20 10 * *'
+#     - cron: '* 9 15 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
