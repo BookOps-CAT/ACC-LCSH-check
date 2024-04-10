@@ -53,6 +53,7 @@ jobs:
             echo "### Added" >> $PR_BODY
             echo "+ New infile is: data/acc_in.csv" >> $PR_BODY
             echo "+ Old infile is: data/acc_in_$(date "+%Y%m%d").csv" >> $PR_BODY
+          fi
 
           gh pr create \
             --repo ${{ github.repository }} \
