@@ -41,36 +41,43 @@ jobs:
       - name: Create PR text
         id: pr_text
         run: |
-          echo 'PR_ADDED << EOF'
-          ### Added
-          + New infile is: data/acc_in.csv
-          + Old infile is: data/acc_in_$(date "+%Y%m%d").csv
-          echo EOF
-          
-          echo 'PR_BODY << EOF'
-          [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ]]
-          ### Changed
-          + lcsh.log updated with data from workflow run on $(date "+%D")
-          echo EOF >> $GITHUB_OUTPUT
+          {
+            echo 'PR_ADDED << EOF'
+            ### Added
+            + New infile is: data/acc_in.csv
+            + Old infile is: data/acc_in_$(date "+%Y%m%d").csv
+            echo EOF
+          }
+          {
+            echo 'PR_BODY << EOF'
+            [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ]]
+            ### Changed
+            + lcsh.log updated with data from workflow run on $(date "+%D")
+            echo EOF 
+          } >> $GITHUB_OUTPUT
 
       - name: Create Issue text
         id: issue_text
         if: ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }}
         run: |
-          echo 'ISSUE_CHANGED << EOF'
-          ### Changed
-          + ${{ steps.changes.outputs.CHANGED }}
-          echo EOF
-
-          echo 'ISSUE_DEPRECATED << EOF'
-          ### Deprecated
-          + ${{ steps.changes.outputs.DEPRECATED }}
-          echo EOF
-
-          echo 'ISSUE_BODY << EOF'
-          [[ ! -z ${{ steps.changes.outputs.CHANGED }} && $ISSUE_CHANGED]];
-          [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} && $ISSUE_DEPRECATED]];
-          echo EOF >> $GITHUB_OUTPUT
+          {
+            echo 'ISSUE_CHANGED << EOF'
+            ### Changed
+            + ${{ steps.changes.outputs.CHANGED }}
+            echo EOF
+          }
+          {
+            echo 'ISSUE_DEPRECATED << EOF'
+            ### Deprecated
+            + ${{ steps.changes.outputs.DEPRECATED }}
+            echo EOF
+          }
+          {
+            echo 'ISSUE_BODY << EOF'
+            [[ ! -z ${{ steps.changes.outputs.CHANGED }} && $ISSUE_CHANGED]];
+            [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} && $ISSUE_DEPRECATED]];
+            echo EOF 
+          } >> $GITHUB_OUTPUT
           
 
       - name: Commit and push changed files
