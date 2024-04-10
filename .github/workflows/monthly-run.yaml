@@ -63,3 +63,30 @@ jobs:
           echo ${{ steps.changes.outputs.CHANGED != '{ }' && '$ISSUE_CHANGED' }} >> $GITHUB_ENV
           echo ${{ steps.changes.outputs.DEPRECATED != '{ }' && '$ISSUE_DEPRECATED' }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
+      - name: Commit and push changed files
+        if: ${{ contains(env, 'PR_BODY') }}
+        run: |
+          git config user.name "Charlotte Kostelic"
+          git config user.email "charlottekostelic@bookops.org"
+          git add lcsh.log
+          git add data/*
+          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
+
+      - name: Create PR
+        if: ${{ contains(env, 'PR_BODY') }}
+        run: |
+          gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M"))" \
+            --body "$PR_BODY")
+
+      - name: Create Issue
+        if: ${{ contains(env, 'ISSUE_BODY') }}
+        run: |
+          gh issue create \
+            --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
+            --assignee "$ASSIGNEES" \
+            --body "$ISSUE_BODY")
