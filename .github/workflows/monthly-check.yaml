@@ -76,7 +76,7 @@ jobs:
 
       - name: Create PR
         run: |
-          git push --set-upstream origin monthly_check_$DATE
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
