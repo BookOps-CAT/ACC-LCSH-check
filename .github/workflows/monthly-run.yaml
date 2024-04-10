@@ -41,7 +41,6 @@ jobs:
 
       - name: Parse changes
         id: changes
-        env: 
         run: |
           echo "CHANGED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
