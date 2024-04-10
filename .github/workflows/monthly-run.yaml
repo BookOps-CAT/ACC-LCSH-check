@@ -49,10 +49,11 @@ jobs:
       - name: Create PR
         run: |
           echo "### Changed" >> $PR_BODY
-          if [[ ! -z ${{ steps.changes.outputs.CHANGED }} ]];
+          echo "+ lcsh.log updated with data from workflow" >> $PR_BODY
+          if [[ toJSON(steps.changes.outputs.CHANGED) != {} || toJSON(steps.changes.outputs.DEPRECATED) != {} ]];
             echo "### Added" >> $PR_BODY
             echo "+ New infile is: data/acc_in.csv" >> $PR_BODY
-            echo "+ Old infile is: data/acc_in_$DATE.csv" >> $PR_BODY
+            echo "+ Old infile is: data/acc_in_$(date "+%Y%m%d").csv" >> $PR_BODY
 
           gh pr create \
             --repo ${{ github.repository }} \
@@ -61,7 +62,7 @@ jobs:
             --body "$PR_BODY")
 
       - name: Create Issue
-        if: ${{ ! -z steps.changes.outputs.CHANGED ||  ! -z steps.changes.outputs.CHANGED }}
+        if: ${{ toJSON(steps.changes.outputs.CHANGED) != {} ||  toJSON(steps.changes.outputs.DEPRECATED) != {} }}
         run: |
           if [[ ! -z ${{ steps.changes.outputs.CHANGED }} ]];
             echo "### Changed" >> $ISSUE_BODY
@@ -71,6 +72,6 @@ jobs:
             echo ${{ steps.changes.outputs.DEPRECATED }} >> $ISSUE_BODY
 
           gh issue create \
-            --title "Changes to ACC LCSH" \
+            --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
             --assignee "$ASSIGNEES" \
             --body "$ISSUE_BODY")
