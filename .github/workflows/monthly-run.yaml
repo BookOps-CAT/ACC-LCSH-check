@@ -60,6 +60,6 @@ jobs:
           ISSUE_DEPRECATED="### Deprecated\n
                          + ${{ steps.changes.outputs.DEPRECATED }}"
           echo "ISSUE_BODY<<EOF" >> $GITHUB_ENV
-          echo ${{ steps.changes.outputs.CHANGED != '{ }' && $ISSUE_CHANGED }} >> $GITHUB_ENV
-          echo ${{ steps.changes.outputs.DEPRECATED != '{ }' && $ISSUE_DEPRECATED }} >> $GITHUB_ENV
+          echo ${{ steps.changes.outputs.CHANGED != '{ }' && '$ISSUE_CHANGED' }} >> $GITHUB_ENV
+          echo ${{ steps.changes.outputs.DEPRECATED != '{ }' && '$ISSUE_DEPRECATED' }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
