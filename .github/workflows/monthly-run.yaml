@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '1/5 17 10 * *'
+    - cron: '1/5 18-20 10 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -41,13 +41,13 @@ jobs:
           ### Added
           + New infile is: data/acc_in.csv
           + Old infile is: data/acc_in_$(date "+%Y%m%d").csv
-          echo EOF >> $GITHUB_ENV
+          echo EOF
           
           echo 'PR_BODY << EOF'
           [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ]]
           ### Changed
           + lcsh.log updated with data from workflow run on $(date "+%D")
-          echo EOF >> $GITHUB_ENV
+          echo EOF >> $GITHUB_OUTPUT
 
       - name: Create Issue text
         id: issue_text
@@ -66,11 +66,11 @@ jobs:
           echo 'ISSUE_BODY << EOF'
           [[ ! -z ${{ steps.changes.outputs.CHANGED }} && $ISSUE_CHANGED]];
           [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} && $ISSUE_DEPRECATED]];
-          echo EOF >> $GITHUB_ENV
+          echo EOF >> $GITHUB_OUTPUT
           
 
       - name: Commit and push changed files
-        if: ${{ toJSON(steps.pr_text.outcome) == \"success\" }}
+        if: ${{ toJSON(steps.pr_text.outputs) != '{ \"PR_BODY\":\"\" }' }}
         run: |
           git config user.name "Charlotte Kostelic"
           git config user.email "charlottekostelic@bookops.org"
@@ -80,7 +80,7 @@ jobs:
           git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
 
       - name: Create PR
-        if: ${{ steps.pr_text.outcome == success }}
+        if: ${{ toJSON(steps.pr_text.outputs) != '{ \"PR_BODY\":\"\" }' }}
         run: |
           gh pr create \
             --repo ${{ github.repository }} \
@@ -90,7 +90,7 @@ jobs:
 
 
       - name: Create Issue
-        if: ${{ toJSON(steps.issue_text.outcome) == \"success\" }}
+        if: ${{ toJSON(steps.issue_text.outputs) != '{ \"ISSUE_BODY\":\"\" }' }}
         run: |
           gh issue create \
             --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
