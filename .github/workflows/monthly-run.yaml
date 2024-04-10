@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '15/5 16 10 * *'
+    - cron: '1/5 17 10 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -42,13 +42,18 @@ jobs:
 
       - name: Create PR
         run: |
-          echo "### Changed" >> $PR_BODY
-          echo "+ lcsh.log updated with data from workflow" >> $PR_BODY
-          if [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} ]];
-            echo "### Added" >> $PR_BODY
-            echo "+ New infile is: data/acc_in.csv" >> $PR_BODY
-            echo "+ Old infile is: data/acc_in_$(date "+%Y%m%d").csv" >> $PR_BODY
-
+          read -d '\n' PR_ADDED << EOF
+          ### Added
+          + New infile is: data/acc_in.csv
+          + Old infile is: data/acc_in_$(date "+%Y%m%d").csv
+          EOF
+          
+          read -d '\n' PR_BODY << EOF
+          [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} && $PR_ADDED ]]
+          ### Changed
+          + lcsh.log updated with data from workflow run on $(date "+%D")
+          EOF
+          
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
@@ -58,12 +63,20 @@ jobs:
       - name: Create Issue
         if: ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }}
         run: |
-          if [[ ! -z ${{ steps.changes.outputs.CHANGED }} ]];
-            echo "### Changed" >> $ISSUE_BODY
-            echo ${{ steps.changes.outputs.CHANGED }} >> $ISSUE_BODY
-          if [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} ]];
-            echo "### Deprecated" >> $ISSUE_BODY
-            echo ${{ steps.changes.outputs.DEPRECATED }} >> $ISSUE_BODY
+          read -d '\n' ISSUE_CHANGED << EOF
+          ### Changed
+          + ${{ steps.changes.outputs.CHANGED }}
+          EOF
+
+          read -d '\n' ISSUE_DEPRECATED << EOF
+          ### Deprecated
+          + ${{ steps.changes.outputs.DEPRECATED }}
+          EOF
+
+          read -d '\n' ISSUE_BODY << EOF
+          [[ ! -z ${{ steps.changes.outputs.CHANGED }} && $ISSUE_CHANGED]];
+          [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} && $ISSUE_DEPRECATED]];
+          EOF
 
           gh issue create \
             --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
