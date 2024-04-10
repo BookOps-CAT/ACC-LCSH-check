@@ -62,7 +62,7 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Parse changes
-        if: ${{ "$CHANGED" == 'true' }}
+        if: ${{ $CHANGED == 'true' }}
         id: changes
         run: |
           echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
