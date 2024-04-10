@@ -50,7 +50,7 @@ jobs:
         run: |
           echo "### Changed" >> $PR_BODY
           echo "+ lcsh.log updated with data from workflow" >> $PR_BODY
-          if [[ toJSON(steps.changes.outputs.CHANGED) != {} || toJSON(steps.changes.outputs.DEPRECATED) != {} ]];
+          if [[ ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }} ]];
             echo "### Added" >> $PR_BODY
             echo "+ New infile is: data/acc_in.csv" >> $PR_BODY
             echo "+ Old infile is: data/acc_in_$(date "+%Y%m%d").csv" >> $PR_BODY
@@ -62,7 +62,7 @@ jobs:
             --body "$PR_BODY")
 
       - name: Create Issue
-        if: ${{ toJSON(steps.changes.outputs.CHANGED) != {} ||  toJSON(steps.changes.outputs.DEPRECATED) != {} }}
+        if: ${{ toJSON(steps.changes.outputs) != '{ \"CHANGED\":\"\", \"DEPRECATED\":\"\" }' }}
         run: |
           if [[ ! -z ${{ steps.changes.outputs.CHANGED }} ]];
             echo "### Changed" >> $ISSUE_BODY
