@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '* 9 10 * *'
+    - cron: '45/5 13 10 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -40,14 +40,16 @@ jobs:
           git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
 
       - name: Parse changes
+        id: changes
+        env: 
         run: |
-          echo "CHANGED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "CHANGED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
+          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_OUTPUT
 
       - name: Create PR
         run: |
           echo "### Changed" >> $PR_BODY
-          if [[ ! -z "$CHANGED" ]];
+          if [[ ! -z ${{ steps.changes.outputs.CHANGED }} ]];
             echo "### Added" >> $PR_BODY
             echo "+ New infile is: data/acc_in.csv" >> $PR_BODY
             echo "+ Old infile is: data/acc_in_$DATE.csv" >> $PR_BODY
@@ -59,14 +61,14 @@ jobs:
             --body "$PR_BODY")
 
       - name: Create Issue
-        if: ${{ contains(env.CHANGED, " ") == true || contains(env.DEPRECATED, " ") == true }}
+        if: ${{ ! -z steps.changes.outputs.CHANGED ||  ! -z steps.changes.outputs.CHANGED }}
         run: |
-          if [[ ! -z "$CHANGED" ]];
+          if [[ ! -z ${{ steps.changes.outputs.CHANGED }} ]];
             echo "### Changed" >> $ISSUE_BODY
-            echo $CHANGED >> $ISSUE_BODY
-          if [[ ! -z "$DEPRECATED" ]];
+            echo ${{ steps.changes.outputs.CHANGED }} >> $ISSUE_BODY
+          if [[ ! -z ${{ steps.changes.outputs.DEPRECATED }} ]];
             echo "### Deprecated" >> $ISSUE_BODY
-            echo $DEPRECATED >> $ISSUE_BODY
+            echo ${{ steps.changes.outputs.DEPRECATED }} >> $ISSUE_BODY
 
           gh issue create \
             --title "Changes to ACC LCSH" \
