@@ -2,7 +2,7 @@ name: monthly lcsh check
 on:
   push: 
     branches:
-      - testing
+      - main
 # on: 
 #   schedule: 
 #     - cron: '* 9 15 * *'
