@@ -29,7 +29,7 @@ jobs:
 
       - name: Set date, create branch, run script
         run: |
-          echo "DATE=$(date '+%Y%m%d-%H-%M')"
+          echo "DATE=$(date '+%Y%m%d-%H-%M')" >> $GITHUB_ENV
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Parse changes and set vars
         run: |
-          echo "NEW_INFILE=$(git diff --quiet -- data/ && 'false' || true)" >> $GITHUB_ENV
+          echo "NEW_INFILE=$(git diff --quiet -- data/ && 'false' || 'true')" >> $GITHUB_ENV
 
       - name: Create PR text
         if: ${{ env.NEW_INFILE == 'false' }}
