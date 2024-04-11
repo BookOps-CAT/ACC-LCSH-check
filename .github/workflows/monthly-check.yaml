@@ -45,7 +45,7 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ [env.REVISED == 'true' || env.DEPRECATED == 'true'] && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
+            echo "${{ (env.REVISED == 'true' || env.DEPRECATED == 'true') && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
             echo EOF
           } >> $GITHUB_ENV
       
