@@ -43,12 +43,12 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ (env.REVISED != 'false' && env.DEPRECATED != 'false')&& '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
+            echo "${{ (env.REVISED != 'false' && env.DEPRECATED != 'false') && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
             echo EOF
           } >> $GITHUB_ENV
       
       - name: Create PR and Issue text (changes)
-        if: ${{ env.CHANGED == 'true' }}
+        if: ${{ (env.REVISED != 'false' && env.DEPRECATED != 'false') }}
         run: |
           {
             echo "ISSUE_BODY<<EOF"
@@ -59,6 +59,7 @@ jobs:
 
       - name: Check PR and Issue text
         run: |
-          echo "CHANGED: ${{ env.CHANGED }}"      
+          echo "REVISED: ${{ env.REVISED }}"  
+          echo "DEPRECATED: ${{ env.DEPRECATED }}"                
           echo "PR_BODY: ${{ env.PR_BODY }}"       
           echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
