@@ -35,7 +35,7 @@ jobs:
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
           echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log && | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
+          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log | && grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
           echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log && | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
