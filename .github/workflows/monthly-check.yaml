@@ -34,9 +34,8 @@ jobs:
         run: |
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
-          echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log | && grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log && | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
+          echo "REVISED=$(grep -q 'DEBUG' lcsh.log && grep -q 'DEBUG - Revised' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep -q 'DEBUG' lcsh.log && grep -q 'DEBUG - Deprecated' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         run: |
@@ -44,7 +43,7 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ env.CHANGED == 'false' && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
+            echo "${{ (env.REVISED != 'false' && env.DEPRECATED != 'false')&& '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
             echo EOF
           } >> $GITHUB_ENV
       
