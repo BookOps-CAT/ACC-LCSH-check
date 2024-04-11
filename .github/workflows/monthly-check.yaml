@@ -64,7 +64,7 @@ jobs:
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
             --title "Monthly LCSH check ($DATE)" \
-            --body "$PR_BODY")
+            --body "$PR_BODY"
 
       - name: Create Issue
         if: ${{ env.CHANGED == 'true' }}
@@ -72,4 +72,4 @@ jobs:
           gh issue create \
             --title "Changes to ACC LCSH ($DATE)" \
             --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY")
+            --body "$ISSUE_BODY"
