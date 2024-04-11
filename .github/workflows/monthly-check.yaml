@@ -34,11 +34,38 @@ jobs:
         run: |
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
-          echo "LOG=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
           echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
-      - name: Test Var
+
+      - name: Create PR text (no changes)
         run: |
-          echo "${{ env.LOG }}"
-          echo "${{ env.REVISED }}"
-          echo "${{ env.DEPRECATED }}"
+          {
+            echo "PR_BODY<<EOF"
+            echo "### Changed:"
+            echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
+            if [[ ${{ env.CHANGED == 'true' }} ]]; then echo '### Added:' else :
+            if [[ ${{ env.CHANGED == 'true' }} ]]; then echo ' + New infile is: data/acc_in.csv' else :
+            if [[ ${{ env.CHANGED == 'true' }} ]]; then echo ' + Old infile is: data/acc_in_$DATE' else :      
+            echo EOF
+          } >> $GITHUB_ENV
+
+      - name: Create PR and Issue text (with changes)
+        if: ${{ env.CHANGED == 'true' }}
+        run: |
+          {
+            echo "ISSUE_BODY<<EOF"
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} ]]; then echo '### Changed:'
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} ]]; then echo '$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')'
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} ]]; then echo '### Deprecated:'
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} ]]; then echo '$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')'
+            echo EOF
+          } >> $GITHUB_ENV
+
+      - name: Check PR and Issue text
+        run: |
+          echo "CHANGED: ${{ env.CHANGED }}"
+          echo "REVISED: ${{ env.REVISED }}"
+          echo "DEPRECATED: ${{ env.DEPRECATED }}"          
+          echo "PR_BODY: ${{ env.PR_BODY }}"          
+          echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"
