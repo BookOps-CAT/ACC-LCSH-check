@@ -44,9 +44,18 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ env.CHANGED == 'true' && '### Added:' || :}}"
-            if [[ $CHANGED == 'true']]; then echo ' + New infile is: data/acc_in.csv'
-            echo "${{ env.CHANGED == 'true' && ' + Old infile is: data/acc_in_$DATE' || ''}}"
+            echo EOF
+          } >> $GITHUB_ENV
+      
+      - name: Create PR text (changes)
+        if: ${{ env.CHANGED == 'true' }}
+        run: |
+          {
+            echo "PR_BODY<<EOF"
+            echo "${{ env.PR_BODY }}"
+            echo "### Added:"
+            echo " + New infile is: data/acc_in.csv"
+            echo " + Old infile is: data/acc_in_$DATE"
             echo EOF
           } >> $GITHUB_ENV
 
