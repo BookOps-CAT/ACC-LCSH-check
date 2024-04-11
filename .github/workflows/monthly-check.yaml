@@ -84,8 +84,8 @@ jobs:
           
           {
             echo "ISSUE_BODY<<EOF"
-            ${{ contains(env.REVISED, 'sh') == 'true' && echo '$REVISED' }}
-            ${{ contains(env.DEPRECATED, 'sh') == 'true' && echo '$DEPRECATED' }}
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} && echo '$REVISED' ]]
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} && echo '$DEPRECATED' }]]
             echo EOF
           } >> $GITHUB_ENV
       - name: Check PR and Issue text
