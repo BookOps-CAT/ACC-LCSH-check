@@ -29,7 +29,7 @@ jobs:
 
       - name: Get date var
         run: echo "DATE=$(date "+%Y%m%d-%H-%M-%S")"  >> $GITHUB_ENV
-        
+
       - name: Create branch, run script
         run: |
           git checkout -b monthly_check_$DATE
@@ -70,26 +70,15 @@ jobs:
           } >> $GITHUB_ENV
           
           {
-            echo "REVISED<<EOF"
-            echo "### Changed:"
-            echo "$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')"
-            echo EOF
-          } >> $GITHUB_ENV
-          
-          {
-            echo "DEPRECATED<<EOF"
-            echo "### Deprecated:"
-            echo "$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')"
-            echo EOF
-          } >> $GITHUB_ENV
-          
-          {
             echo "ISSUE_BODY<<EOF"
-            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} && echo '$REVISED' ]]
-            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} && echo '$DEPRECATED' }]]
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} && echo '### Changed:' ]]
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} && echo '$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')' ]]
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} && echo '### Deprecated:' }]]
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} && echo '$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')' }]]
             echo EOF
           } >> $GITHUB_ENV
       - name: Check PR and Issue text
         run: |
+          echo "There are new files is: ${{ env.NEW_INFILE }}"
           echo "PR body text is: ${{ env.PR_BODY }}"
           echo "Issue body text is: ${{ env.ISSUE_BODY }}"
