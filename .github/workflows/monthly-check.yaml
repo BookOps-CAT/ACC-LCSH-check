@@ -1,8 +1,7 @@
 name: monthly lcsh check
-on: [push]
-# on: 
-#   schedule: 
-#     - cron: '* 9 15 * *'
+on: 
+  schedule: 
+    - cron: '55 20 11 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -48,13 +47,13 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "$(grep -q 'DEBUG' lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_$DATE' || echo '')"
+            echo "$(grep -q 'DEBUG' lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_${{ env.DATE }}' || echo '')"
             echo EOF
           } >> $GITHUB_ENV
           {
             echo "ISSUE_BODY<<EOF"
-            echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && echo '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
-            echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && echo '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
+            echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
+            echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
 
