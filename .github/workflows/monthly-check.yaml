@@ -38,7 +38,7 @@ jobs:
 
           echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
-          echo "NEW_INFILE=$(${{ contains(env.REVISED, '[') == 'true' || contains(env.DEPRECATED, '[') == 'true' && 'true' || 'false'}})"
+          echo "NEW_INFILE=$(${{ contains(env.REVISED, 'sh') == 'true' || contains(env.DEPRECATED, 'sh') == 'true' && 'true' || 'false'}})"
 
       - name: Create PR Text
         run: |
