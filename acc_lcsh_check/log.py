@@ -60,17 +60,17 @@ class LogSession:
             self.session_data["revised_terms"]
                 ) == 0:
             self.logger.info("No changes to ACC terms this month.")
-            self.logger.info(f"Updated list of current terms is in {self.outfile}")
-        elif len(self.session_data["revised_terms"]) == 0:
-            self.logger.debug(
-                f'Deprecated terms to check: {self.session_data["deprecated_terms"]}'
-                )
-            self.logger.info(f"Updated list of current terms is in {self.outfile}")
         else:
-            self.logger.debug(
-                f"Revised terms to check: {self.session_data["revised_terms"]}"
+            if len(self.session_data["revised_terms"]) != 0:
+                self.logger.debug(
+                    f"Revised terms to check: {self.session_data["revised_terms"]}"
                 )
-            self.logger.info(f"Updated list of current terms is in {self.outfile}")
+            if len(self.session_data["deprecated_terms"]) != 0:
+                self.logger.debug(
+                    f'Deprecated terms to check: '
+                    f'{self.session_data["deprecated_terms"]}'
+                )
+        self.logger.info(f"Updated list of current terms is in {self.outfile}")
 
     def rename_files(self):
         today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")

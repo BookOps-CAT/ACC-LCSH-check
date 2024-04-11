@@ -6,6 +6,9 @@ on:
 # on: 
 #   schedule: 
 #     - cron: '* 9 15 * *'
+          git diff --quiet -- data/ && DIFF=$('false')
+          git diff --quiet -- data/ || DIFF=$('true')
+          echo "NEW_INFILE=$("$DIFF")" >> $GITHUB_ENV
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -45,9 +48,7 @@ jobs:
 
       - name: Parse changes
         run: |
-          git diff --quiet -- data/ && DIFF=$('false')
-          git diff --quiet -- data/ || DIFF=$('true')
-          echo "NEW_INFILE=$($DIFF)" >> $GITHUB_ENV
+          echo "NEW_INFILE=$(grep 'DEBUG' lcsh.log && 'true' || 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         if: ${{ env.NEW_INFILE == 'false' }}
