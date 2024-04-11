@@ -39,16 +39,13 @@ jobs:
           echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
           echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
 
-          echo "REVISED_LIST=$(grep -q 'DEBUG - Revised' lcsh.log && grep 'DEBUG - Revised' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
-          echo "DEPRECATED_LIST=$(grep -q 'DEBUG - Deprecated' lcsh.log  && grep 'DEBUG - Deprecated' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
-
       - name: Create PR text (no changes)
         run: |
           {
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ env.CHANGED == 'true' && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
+            echo "${{ [env.REVISED == 'true' || env.DEPRECATED == 'true'] && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
             echo EOF
           } >> $GITHUB_ENV
       
@@ -57,7 +54,7 @@ jobs:
         run: |
           {
             echo "ISSUE_BODY<<EOF"
-            echo "${{ env.REVISED_LIST != 'false' && '### Changed:' && '${{ env.REVISED_LIST }}' || '$(grep -q "DEBUG - Revised" lcsh.log)' }}"
+            echo "${{ env.REVISED == 'true' && '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)' }}"
             echo "${{ env.DEPRECATED == 'true' && '### Deprecated:' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)'}}"
             echo EOF
           } >> $GITHUB_ENV
