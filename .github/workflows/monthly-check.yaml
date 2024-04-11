@@ -74,4 +74,4 @@ jobs:
           echo "REVISED: ${{ env.REVISED }}"
           echo "DEPRECATED: ${{ env.DEPRECATED }}"          
           echo "PR_BODY: ${{ env.PR_BODY }}"       
-          echo "ISSUE_BODY: ${{ env.PR_BODY }}"          
+          echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
