@@ -57,10 +57,10 @@ jobs:
         run: |
           {
             echo "ISSUE_BODY<<EOF"
-            echo "${{ contains(env.DEPRECATED. 'sh') == 'true' && '### Deprecated:' }}"
-            echo "${{ contains(env.DEPRECATED. 'sh') == 'true' && '$DEPRECATED' }}"
-            echo "${{ contains(env.REVISED. 'sh') == 'true' && '### Changed:' }}"
-            echo "${{ contains(env.REVISED. 'sh') == 'true' && '$REVISED' }}"
+            echo "${{ contains(env.DEPRECATED, 'sh') == 'true' && '### Deprecated:' }}"
+            echo "${{ contains(env.DEPRECATED, 'sh') == 'true' && '$DEPRECATED' }}"
+            echo "${{ contains(env.REVISED, 'sh') == 'true' && '### Changed:' }}"
+            echo "${{ contains(env.REVISED, 'sh') == 'true' && '$REVISED' }}"
             echo EOF
           } >> $GITHUB_ENV
 
