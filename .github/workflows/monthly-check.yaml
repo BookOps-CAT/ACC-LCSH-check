@@ -52,8 +52,8 @@ jobs:
         run: |
           {
             echo "ISSUE_BODY<<EOF"
-            echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
-            echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
+            echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && echo '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
+            echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && echo '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
 
