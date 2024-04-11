@@ -35,10 +35,9 @@ jobs:
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
-          echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-
-      - name: Create PR text (no changes)
+      - name: Parse output, create PR and Issue text
         run: |
+          echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
           {
             echo "PR_BODY<<EOF"
             echo "### Changed:"
@@ -46,19 +45,34 @@ jobs:
             echo "$(grep -q 'DEBUG' lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_$DATE' || echo '')"
             echo EOF
           } >> $GITHUB_ENV
-      
-      - name: Create PR and Issue text (changes)
-        if: ${{ env.CHANGED == 'true' }}
-        run: |
           {
             echo "ISSUE_BODY<<EOF"
             echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && echo '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
             echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && echo '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
-
-      - name: Check PR and Issue text
+      
+      - name: Commit and push changed files
         run: |
-          echo "CHANGED: ${{ env.CHANGED }}"                
-          echo "PR_BODY: ${{ env.PR_BODY }}"       
-          echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
+          git config user.name "Charlotte Kostelic"
+          git config user.email "charlottekostelic@bookops.org"
+          git add lcsh.log
+          git add data/*
+          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
+
+      - name: Create PR
+        run: |
+          gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M"))" \
+            --body "$PR_BODY")
+
+      - name: Create Issue
+        if: ${{ env.CHANGED == 'true' }}
+        run: |
+          gh issue create \
+            --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
+            --assignee "$ASSIGNEES" \
+            --body "$ISSUE_BODY")
