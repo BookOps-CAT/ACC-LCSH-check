@@ -1,8 +1,5 @@
 name: monthly lcsh check
-on:
-  push: 
-    branches:
-      - github-actions
+on: [push]
 # on: 
 #   schedule: 
 #     - cron: '* 9 15 * *'
