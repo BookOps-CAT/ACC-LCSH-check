@@ -35,51 +35,7 @@ jobs:
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
-      - name: Commit and push changes
-        run: |
-          git config user.name "Charlotte Kostelic"
-          git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log data/*
-          git commit -a -m "LCSH Check $DATE"
-          git push --set-upstream origin monthly_check_$DATE
-
-          echo "TEST=$(git diff --quiet -- data/ && 'false' || 'true')" >> $GITHUB_ENV
-
-
-      - name: Create PR text (no changes)
-        if: ${{ env.TEST == 'false' }}
-        run: |
-          {
-            echo "PR_BODY<<EOF"
-            echo "### Changed:"
-            echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo EOF
-          } >> $GITHUB_ENV
-
-      - name: Create PR and Issue text (with changes)
-        if: ${{ env.TEST == 'true' }}
-        run: |
-          {
-            echo "PR_BODY<<EOF"
-            echo "${{ env.PR_BODY }}"
-            echo "### Added:"
-            echo " + New infile is: data/acc_in.csv"
-            echo " + Old infile is: data/acc_in_$DATE"
-            echo EOF
-          } >> $GITHUB_ENV
-          
-          {
-            echo "ISSUE_BODY<<EOF"
-            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} && echo '### Changed:' ]]
-            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} && echo '$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')' ]]
-            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} && echo '### Deprecated:' }]]
-            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} && echo '$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')' }]]
-            echo EOF
-          } >> $GITHUB_ENV
-      - name: Check PR and Issue text
-        run: |
-          echo "There are new files is: ${{ env.NEW_INFILE }}"
-          echo "PR body text is: ${{ env.PR_BODY }}"
-          echo "Issue body text is: ${{ env.ISSUE_BODY }}"
-          echo "${{ env.LOG }}"
-          echo "${{ env.TEST }}"
+          echo "LOG=$(grep -q 'DEBUG' lcsh.log && 'true' || 'false')" >> $GITHUB_ENV
+      
+      - name: Test Var
+        run: echo "${{ env.LOG }}"
