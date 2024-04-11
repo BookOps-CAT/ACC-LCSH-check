@@ -58,15 +58,12 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
-          echo "REVISED_LIST=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')"
-          echo "DEPRECATED_LIST=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')"
-
           {
             echo "ISSUE_BODY<<EOF"
-            echo "${{ env.REVISED == 'true' && '### Changed:'}}"
+            echo "${{ env.REVISED == 'false' && '### Changed:'}}"
             echo "${{ env.REVISED == 'true' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' }}"
             echo "${{ env.DEPRECATED == 'true' && '### Deprecated:' }}"
-            echo "${{ env.DEPRECATED == 'true' && '$DEPRECATED_LIST' }}"
+            echo "${{ env.DEPRECATED == 'true' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' }}"
             echo EOF
           } >> $GITHUB_ENV
 
