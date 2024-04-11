@@ -1,0 +1,4 @@
+2024-04-11 20:49:28,620 - INFO - Checking id.loc.gov
+2024-04-11 20:49:28,620 - DEBUG - Revised terms to check: ['sh96000082']
+2024-04-11 20:49:28,620 - DEBUG - Deprecated terms to check: ['sh96010654']
+2024-04-11 20:49:28,620 - INFO - Updated list of current terms is in data/acc_out.csv
