@@ -27,57 +27,44 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Create branch, run script
+      - name: Set date, create branch
         run: |
-          git checkout -b monthly_check_$(date "+%Y%m%d-%H-%M")
+          echo "DATE=$(date '+%Y%m%d-%H-%M')"
+          git checkout -b monthly_check_$DATE
+
+      - name: Run script, parse changes to vars
+        run: |
           python monthly_lcsh_check.py
 
-      - name: Commit and push changed files
-        run: |
-          git config user.name "Charlotte Kostelic"
-          git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log
-          git add data/*
-          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
-          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
-          
-          echo "CHANGED=$(git diff --quiet -- data/ && 'false' || 'true')"
-      - name: Create PR Text
-        run: |
-          NEW_INFILE="### Changed\n
-                     + lcsh.log updated with data from workflow run on $(date '+%D')\n
-                    ### Added\n
-                     + New infile is: data/acc_in.csv\n
-                     + Old infile is: data/acc_in_$(date '+%Y%m%d')"
-          
-          echo "NEW_INFILE<<EOF" >> $GITHUB_ENV
-          echo "$NEW_INFILE" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-          SAME_INFILE="### Changed\n
-                     + lcsh.log updated with data from workflow run on $(date '+%D')\n
-          
-          echo "SAME_INFILE<<EOF" >> $GITHUB_ENV
-          echo "$SAME_INFILE" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Parse changes
-        if: ${{ env.CHANGED == 'true' }}
-        id: changes
-        run: |
           echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "NEW_INFILE=$(${{ contains(env.REVISED, '[') == 'true' || contains(env.DEPRECATED, '[') == 'true') && 'true' || 'false'}})"
 
-      - name: Create PR
+      - name: Create PR Text
         run: |
-          git diff --quiet -- data/ && same_infile=$(gh pr create \
-            --repo ${{ github.repository }} \
-            --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($DATE)" \
-            --body "$SAME_INFILE")
+          {
+            echo "PR_BODY<<EOF"
+            echo "### Changed:"
+            echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
+            echo "${{ env.NEW_INFILE == 'true' && '### Added:' }}"
+            echo "${{ env.NEW_INFILE == 'true' && ' + New infile is: data/acc_in.csv' }}"
+            echo "${{ env.NEW_INFILE == 'true' && ' + Old infile is: data/acc_in_$DATE' }}"
+            echo EOF
+          } >> $GITHUB_ENV
 
-          git diff --quiet -- data/ ||  new_infile=$(gh pr create \
-            --repo ${{ github.repository }} \
-            --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($DATE)" \
-            --body "$NEW_INFILE")
+      - name: Create Issue Text
+        if: $ {{ env.NEW_INFILE == 'true' }}
+        run: |
+          {
+            echo "ISSUE_BODY<<EOF"
+            echo "${{ startsWith(env.DEPRECATED. '\[') == 'true' && '### Deprecated:' }}"
+            echo "${{ startsWith(env.DEPRECATED. '\[') == 'true' && '$DEPRECATED' }}"
+            echo "${{ startsWith(env.REVISED. '\[') == 'true' && '### Changed:' }}"
+            echo "${{ startsWith(env.REVISED. '\[') == 'true' && '$REVISED' }}"
+            echo EOF
+          } >> $GITHUB_ENV
+
+      - name: Check PR and Issue text
+        run: |
+          echo "PR body text is: ${{ env.PR_BODY }}"
+          echo "Issue body text is: ${{ env.ISSUE_BODY }}"
