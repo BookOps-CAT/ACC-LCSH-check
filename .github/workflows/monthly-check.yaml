@@ -34,9 +34,8 @@ jobs:
         run: |
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
-          echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         run: |
@@ -48,7 +47,7 @@ jobs:
           } >> $GITHUB_ENV
       
       - name: Create PR and Issue text (changes)
-        if: ${{ env.CHANGED == 'true' }}
+        if: ${{ env.REVISED == 'true' || env.DEPRECATED == 'true' }}
         run: |
           {
             echo "PR_BODY<<EOF"
@@ -59,19 +58,9 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
-          {
-            echo "ISSUE_BODY<<EOF"
-            echo "${{ contains(env.REVISED, 'sh') == 'true' && '### Changed:'}}"
-            echo "${{ contains(env.REVISED, 'sh') == 'true' && '$REVISED' }}"
-            echo "${{ contains(env.DEPRECATED, 'sh') == 'true' && '### Deprecated:' }}"
-            echo "${{ contains(env.DEPRECATED, 'sh') == 'true' && '$DEPRECATED' }}"
-            echo EOF
-          } >> $GITHUB_ENV
-
       - name: Check PR and Issue text
         run: |
           echo "CHANGED: ${{ env.CHANGED }}"
           echo "REVISED: ${{ env.REVISED }}"
           echo "DEPRECATED: ${{ env.DEPRECATED }}"          
-          echo "PR_BODY: ${{ env.PR_BODY }}"       
-          echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
+          echo "PR_BODY: ${{ env.PR_BODY }}"         
