@@ -51,7 +51,7 @@ jobs:
           } >> $GITHUB_ENV
       
       - name: Create PR and Issue text (changes)
-        if: ${{ (env.CHANGED == 'true' }}
+        if: ${{ env.CHANGED == 'true' }}
         run: |
           {
             echo "ISSUE_BODY<<EOF"
