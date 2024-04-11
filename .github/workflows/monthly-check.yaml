@@ -10,7 +10,6 @@ env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
   ASSIGNEES: charlottekostelic
-  DATE: $(date "+%Y%m%d-%H-%M-%S")
 jobs:
   monthly-run:
     name: Run monthly LCSH check
@@ -28,8 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Set date, create branch, run script
+      - name: Create branch, run script
         run: |
+          echo "DATE=$(date "+%Y%m%d-%H-%M-%S")"
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
@@ -37,8 +37,7 @@ jobs:
         run: |
           git config user.name "Charlotte Kostelic"
           git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log
-          git add data/*
+          git add lcsh.log add data/*
           git commit -a -m "LCSH Check $DATE"
           git push --set-upstream origin monthly_check_$DATE
 
