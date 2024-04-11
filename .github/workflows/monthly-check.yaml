@@ -45,7 +45,8 @@ jobs:
 
       - name: Parse changes
         run: |
-          echo "NEW_INFILE=$(git diff --quiet -- data/ && 'false' || 'true')" >> $GITHUB_ENV
+          git diff --quiet -- data/ && DIFF=$('false') || DIFF=$('true')
+          echo "NEW_INFILE=$($DIFF)" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         if: ${{ env.NEW_INFILE == 'false' }}
