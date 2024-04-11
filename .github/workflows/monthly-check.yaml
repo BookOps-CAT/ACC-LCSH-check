@@ -34,8 +34,8 @@ jobs:
         run: |
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
-          echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         run: |
@@ -47,7 +47,7 @@ jobs:
           } >> $GITHUB_ENV
       
       - name: Create PR and Issue text (changes)
-        if: ${{ env.REVISED == 'true' || env.DEPRECATED == 'true' }}
+        if: ${{ env.REVISED == 'true' || env.DEPRECATED == 'true '}}
         run: |
           {
             echo "PR_BODY<<EOF"
@@ -63,4 +63,4 @@ jobs:
           echo "CHANGED: ${{ env.CHANGED }}"
           echo "REVISED: ${{ env.REVISED }}"
           echo "DEPRECATED: ${{ env.DEPRECATED }}"          
-          echo "PR_BODY: ${{ env.PR_BODY }}"         
+          echo "PR_BODY: ${{ env.PR_BODY }}"           
