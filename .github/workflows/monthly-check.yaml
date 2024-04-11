@@ -63,10 +63,10 @@ jobs:
 
           {
             echo "ISSUE_BODY<<EOF"
-            echo "${{ env.REVISED == 'true' && echo '### Changed:'}}"
-            echo "${{ env.REVISED == 'true' && echo '$REVISED_LIST' }}"
-            echo "${{ env.DEPRECATED == 'true' && echo '### Deprecated:' }}"
-            echo "${{ env.DEPRECATED == 'true' && echo '$DEPRECATED_LIST' }}"
+            echo "${{ env.REVISED == 'true' && '### Changed:'}}"
+            echo "${{ env.REVISED == 'true' && '$REVISED_LIST' }}"
+            echo "${{ env.DEPRECATED == 'true' && '### Deprecated:' }}"
+            echo "${{ env.DEPRECATED == 'true' && '$DEPRECATED_LIST' }}"
             echo EOF
           } >> $GITHUB_ENV
 
