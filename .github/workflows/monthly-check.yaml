@@ -43,9 +43,10 @@ jobs:
           git commit -a -m "LCSH Check $DATE"
           git push --set-upstream origin monthly_check_$DATE
 
+          echo "LOG=$(grep 'DEBUG' lcsh.log)" >> $GITHUB_ENV
       - name: Parse changes
         run: |
-          echo "NEW_INFILE=$(grep 'DEBUG' lcsh.log && 'true' || 'false')" >> $GITHUB_ENV
+          echo "NEW_INFILE=${{ contains(env.LOG, 'DEBUG') && 'true' || 'false'}}" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         if: ${{ env.NEW_INFILE == 'false' }}
