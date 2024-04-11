@@ -43,7 +43,8 @@ jobs:
           git commit -a -m "LCSH Check $DATE"
           git push --set-upstream origin monthly_check_$DATE
 
-          echo "LOG=$(grep 'DEBUG' lcsh.log)" >> $GITHUB_ENV
+          echo "LOG=$(grep 'DEBUG' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "TEST=$(git diff --quiet -- data/ && 'false' || 'true')"
       - name: Parse changes
         run: |
           echo "NEW_INFILE=${{ contains(env.LOG, 'DEBUG') && 'true' || 'false'}}" >> $GITHUB_ENV
@@ -83,3 +84,5 @@ jobs:
           echo "There are new files is: ${{ env.NEW_INFILE }}"
           echo "PR body text is: ${{ env.PR_BODY }}"
           echo "Issue body text is: ${{ env.ISSUE_BODY }}"
+          echo "${{ env.LOG }}"
+          echo "${{ env.TEST }}"
