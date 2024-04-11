@@ -36,8 +36,6 @@ jobs:
           python monthly_lcsh_check.py
 
           echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         run: |
@@ -45,7 +43,7 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ (env.REVISED == 'true' || env.DEPRECATED == 'true') && '### Added:' && ' + New infile is: data/acc_in.csv' && ' + Old infile is: data/acc_in_$DATE' || '' }}"
+            echo "$(grep -q 'DEBUG' lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_$DATE' || echo '')"
             echo EOF
           } >> $GITHUB_ENV
       
@@ -55,13 +53,12 @@ jobs:
           {
             echo "ISSUE_BODY<<EOF"
             echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
-            echo "${{ env.DEPRECATED == 'true' && '### Deprecated:' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)'}}"
+            echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
 
       - name: Check PR and Issue text
         run: |
-          echo "REVISED: ${{ env.REVISED_LIST }}"  
-          echo "DEPRECATED: ${{ env.DEPRECATED }}"                
+          echo "CHANGED: ${{ env.CHANGED }}"                
           echo "PR_BODY: ${{ env.PR_BODY }}"       
           echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
