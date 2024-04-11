@@ -58,9 +58,22 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
+          echo "REVISED_LIST=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')"
+          echo "DEPRECATED_LIST=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')"
+
+          {
+            echo "ISSUE_BODY<<EOF"
+            echo "${{ env.REVISED == 'true' && echo '### Changed:'}}"
+            echo "${{ env.REVISED == 'true' && echo '$REVISED_LIST' }}"
+            echo "${{ env.DEPRECATED == 'true' && echo '### Deprecated:' }}"
+            echo "${{ env.DEPRECATED == 'true' && echo '$DEPRECATED_LIST' }}"
+            echo EOF
+          } >> $GITHUB_ENV
+
       - name: Check PR and Issue text
         run: |
           echo "CHANGED: ${{ env.CHANGED }}"
           echo "REVISED: ${{ env.REVISED }}"
           echo "DEPRECATED: ${{ env.DEPRECATED }}"          
-          echo "PR_BODY: ${{ env.PR_BODY }}"           
+          echo "PR_BODY: ${{ env.PR_BODY }}"       
+          echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
