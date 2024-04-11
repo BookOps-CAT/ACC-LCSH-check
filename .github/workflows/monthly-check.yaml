@@ -32,6 +32,15 @@ jobs:
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
+      - name: Commit and push changed files
+        run: |
+          git config user.name "Charlotte Kostelic"
+          git config user.email "charlottekostelic@bookops.org"
+          git add lcsh.log
+          git add data/*
+          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
+          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
+
       - name: Parse output, create PR and Issue text
         run: |
           echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
@@ -48,15 +57,6 @@ jobs:
             echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && echo '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
-      
-      - name: Commit and push changed files
-        run: |
-          git config user.name "Charlotte Kostelic"
-          git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log
-          git add data/*
-          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
-          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
 
       - name: Create PR
         run: |
