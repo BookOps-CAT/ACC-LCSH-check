@@ -54,7 +54,7 @@ jobs:
         run: |
           {
             echo "ISSUE_BODY<<EOF"
-            echo "${{ env.REVISED == 'true' && '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)' }}"
+            echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log)')"
             echo "${{ env.DEPRECATED == 'true' && '### Deprecated:' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Deprecated" lcsh.log)'}}"
             echo EOF
           } >> $GITHUB_ENV
