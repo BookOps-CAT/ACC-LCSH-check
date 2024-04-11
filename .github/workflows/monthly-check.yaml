@@ -45,7 +45,7 @@ jobs:
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
             echo "${{ env.CHANGED == 'true' && '### Added:' || :}}"
-            echo "${{ env.CHANGED == 'false' && ' + New infile is: data/acc_in.csv' || :}}"
+            if [[ $CHANGED == 'true']]; then echo ' + New infile is: data/acc_in.csv'
             echo "${{ env.CHANGED == 'true' && ' + Old infile is: data/acc_in_$DATE' || ''}}"
             echo EOF
           } >> $GITHUB_ENV
