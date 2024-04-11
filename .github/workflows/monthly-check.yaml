@@ -35,7 +35,8 @@ jobs:
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
-          echo "LOG=$(grep -q 'DEBUG' lcsh.log && 'true' || 'false')" >> $GITHUB_ENV
+          DEBUG=$(grep -q 'DEBUG' lcsh.log && 'true' || 'false')
+          echo LOG="$('$DEBUG')" >> $GITHUB_ENV
       
       - name: Test Var
         run: echo "${{ env.LOG }}"
