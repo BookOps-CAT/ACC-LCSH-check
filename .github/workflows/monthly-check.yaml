@@ -60,8 +60,7 @@ jobs:
 
           {
             echo "ISSUE_BODY<<EOF"
-            echo "${{ env.REVISED == 'false' && '### Changed:'}}"
-            echo "${{ env.REVISED == 'true' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' }}"
+            echo "${{ env.REVISED == 'false' && '### Changed:' && '$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$")' || '$(grep -q "DEBUG - Revised" lcsh.log }}"
             echo "${{ env.DEPRECATED == 'true' && '### Deprecated:' }}"
             echo "${{ env.DEPRECATED == 'true' && '$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$")' }}"
             echo EOF
