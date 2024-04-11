@@ -34,11 +34,13 @@ jobs:
         run: |
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
+
           echo "CHANGED=$(grep -q 'DEBUG' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
-          echo "REVISED_LIST=$(${{ env.CHANGED == 'true' }} && grep -q 'DEBUG - Revised' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
-          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
-          echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep -q 'DEBUG - Deprecated' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
+          echo "REVISED=$(grep -q 'DEBUG - Revised' lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
+
+          echo "REVISED_LIST=$(grep -q 'DEBUG - Revised' lcsh.log && grep 'DEBUG - Revised' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
+          echo "DEPRECATED_LIST=$(grep -q 'DEBUG - Deprecated' lcsh.log  && grep 'DEBUG - Deprecated' lcsh.log | grep -Eo "\[.+]$" || echo 'false')" >> $GITHUB_ENV
 
       - name: Create PR text (no changes)
         run: |
@@ -62,7 +64,7 @@ jobs:
 
       - name: Check PR and Issue text
         run: |
-          echo "REVISED: ${{ env.REVISED }}"  
+          echo "REVISED: ${{ env.REVISED_LIST }}"  
           echo "DEPRECATED: ${{ env.DEPRECATED }}"                
           echo "PR_BODY: ${{ env.PR_BODY }}"       
           echo "ISSUE_BODY: ${{ env.ISSUE_BODY }}"          
