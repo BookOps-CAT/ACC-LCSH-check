@@ -35,6 +35,10 @@ jobs:
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
           grep -q 'DEBUG' lcsh.log && echo "LOG=$('true')" || echo "LOG=$('false')" >> $GITHUB_ENV
-
+          echo "REVISED=$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
+          echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
       - name: Test Var
-        run: echo "${{ env.LOG }}"
+        run: |
+          echo "${{ env.LOG }}"
+          echo "${{ env.REVISED }}"
+          echo "${{ env.DEPRECATED }}"
