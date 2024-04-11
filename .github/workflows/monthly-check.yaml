@@ -27,9 +27,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
+      - name: Get date var
+        run: echo "DATE=$(date "+%Y%m%d-%H-%M-%S")"  >> $GITHUB_ENV
+        
       - name: Create branch, run script
         run: |
-          echo "DATE=$(date "+%Y%m%d-%H-%M-%S")"  >> $GITHUB_ENV
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
@@ -41,11 +43,11 @@ jobs:
           git commit -a -m "LCSH Check $DATE"
           git push --set-upstream origin monthly_check_$DATE
 
-      - name: Parse changes and set vars
+      - name: Parse changes
         run: |
           echo "NEW_INFILE=$(git diff --quiet -- data/ && 'false' || 'true')" >> $GITHUB_ENV
 
-      - name: Create PR text
+      - name: Create PR text (no changes)
         if: ${{ env.NEW_INFILE == 'false' }}
         run: |
           {
@@ -55,7 +57,7 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
-      - name: Create PR and Issue text
+      - name: Create PR and Issue text (with changes)
         if: ${{ env.NEW_INFILE == 'true' }}
         run: |
           {
