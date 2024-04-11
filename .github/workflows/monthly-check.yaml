@@ -47,8 +47,8 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
       
-      - name: Create PR text (changes)
-        if: ${{ env.CHANGED == 'false' }}
+      - name: Create PR and Issue text (changes)
+        if: ${{ env.CHANGED == 'true' }}
         run: |
           {
             echo "PR_BODY<<EOF"
@@ -59,10 +59,19 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
+          {
+            echo "ISSUE_BODY<<EOF"
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} ]]; then echo '### Changed:'
+            if [[ ${{ contains(env.REVISED, 'sh') == 'true' }} ]]; then echo '$(grep 'DEBUG - Revised' lcsh.log | grep -Eo '\[.+]$')'
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} ]]; then echo '### Deprecated:'
+            if [[ ${{ contains(env.DEPRECATED, 'sh') == 'true' }} ]]; then echo '$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')'
+            echo EOF
+          } >> $GITHUB_ENV
 
       - name: Check PR and Issue text
         run: |
           echo "CHANGED: ${{ env.CHANGED }}"
           echo "REVISED: ${{ env.REVISED }}"
           echo "DEPRECATED: ${{ env.DEPRECATED }}"          
-          echo "PR_BODY: ${{ env.PR_BODY }}"          
+          echo "PR_BODY: ${{ env.PR_BODY }}"       
+          echo "ISSUE_BODY: ${{ env.PR_BODY }}"          
