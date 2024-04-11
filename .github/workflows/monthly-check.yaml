@@ -38,8 +38,8 @@ jobs:
           git config user.email "charlottekostelic@bookops.org"
           git add lcsh.log
           git add data/*
-          git commit -a -m "LCSH Check $(date "+%Y%m%d-%H-%M")"
-          git push --set-upstream origin monthly_check_$(date "+%Y%m%d-%H-%M")
+          git commit -a -m "LCSH Check $DATE"
+          git push --set-upstream origin monthly_check_$DATE
 
       - name: Parse output, create PR and Issue text
         run: |
@@ -63,13 +63,13 @@ jobs:
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($(date "+%Y%m%d-%H-%M"))" \
+            --title "Monthly LCSH check ($DATE)" \
             --body "$PR_BODY")
 
       - name: Create Issue
         if: ${{ env.CHANGED == 'true' }}
         run: |
           gh issue create \
-            --title "Changes to ACC LCSH ($(date "+%Y%m%d-%H-%M"))" \
+            --title "Changes to ACC LCSH ($DATE)" \
             --assignee "$ASSIGNEES" \
             --body "$ISSUE_BODY")
