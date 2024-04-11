@@ -40,29 +40,50 @@ jobs:
           echo "DEPRECATED=$(grep 'DEBUG - Deprecated' lcsh.log | grep -Eo '\[.+]$')" >> $GITHUB_ENV
           echo "NEW_INFILE=$(${{ contains(env.REVISED, 'sh') == 'true' || contains(env.DEPRECATED, 'sh') == 'true' && 'true' || 'false'}})"
 
-      - name: Create PR Text
+      - name: Create PR and Issue text
         run: |
-          {
-            echo "PR_BODY<<EOF"
-            echo "### Changed:"
-            echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "${{ env.NEW_INFILE == 'true' && '### Added:' }}"
-            echo "${{ env.NEW_INFILE == 'true' && ' + New infile is: data/acc_in.csv' }}"
-            echo "${{ env.NEW_INFILE == 'true' && ' + Old infile is: data/acc_in_$DATE' }}"
-            echo EOF
-          } >> $GITHUB_ENV
-
-      - name: Create Issue Text
-        if: ${{ env.NEW_INFILE == 'true' }}
-        run: |
-          {
-            echo "ISSUE_BODY<<EOF"
-            echo "${{ contains(env.DEPRECATED, 'sh') == 'true' && '### Deprecated:' }}"
-            echo "${{ contains(env.DEPRECATED, 'sh') == 'true' && '$DEPRECATED' }}"
-            echo "${{ contains(env.REVISED, 'sh') == 'true' && '### Changed:' }}"
-            echo "${{ contains(env.REVISED, 'sh') == 'true' && '$REVISED' }}"
-            echo EOF
-          } >> $GITHUB_ENV
+          if ${{ env.NEW_INFILE == 'false' }}; then
+            {
+              echo "PR_BODY<<EOF"
+              echo "### Changed:"
+              echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
+              echo EOF
+            } >> $GITHUB_ENV
+          elif ${{ env.NEW_INFILE == 'true' }}; then
+            {
+              echo "PR_BODY<<EOF"
+              echo "### Changed:"
+              echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
+              echo "### Added:"
+              echo " + New infile is: data/acc_in.csv"
+              echo " + Old infile is: data/acc_in_$DATE"
+              echo EOF
+            } >> $GITHUB_ENV
+          f
+          if ${{ env.NEW_INFILE == 'true' }}; then
+            if ${{ contains(env.DEPRECATED, 'sh') == 'true' }}; then
+              {
+                echo "ISSUE_DEPRECATED<<EOF"
+                echo "### Deprecated:"
+                echo "$DEPRECATED"
+                echo EOF
+              } >> $GITHUB_ENV
+            fi
+            if ${{ contains(env.REVISED, 'sh') == 'true' }}; then
+              {
+                echo "ISSUE_REVISED<<EOF"
+                echo "### Changed:"
+                echo "$REVISED"
+                echo EOF
+              } >> $GITHUB_ENV
+            fi
+            {
+              echo "ISSUE_BODY<<EOF"
+              echo "$ISSUE_DEPRECATED"
+              echo "$ISSUE_REVISED"
+              echo EOF
+            } >> $GITHUB_ENV
+          fi
 
       - name: Check PR and Issue text
         run: |
