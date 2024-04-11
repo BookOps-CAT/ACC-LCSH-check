@@ -6,9 +6,6 @@ on:
 # on: 
 #   schedule: 
 #     - cron: '* 9 15 * *'
-          git diff --quiet -- data/ && DIFF=$('false')
-          git diff --quiet -- data/ || DIFF=$('true')
-          echo "NEW_INFILE=$("$DIFF")" >> $GITHUB_ENV
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
