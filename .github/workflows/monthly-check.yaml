@@ -44,8 +44,10 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
+            echo "${{ env.CHANGED == 'true' && '### Added:' || ''}}
             echo EOF
           } >> $GITHUB_ENV
+
 
       - name: Check PR and Issue text
         run: |
