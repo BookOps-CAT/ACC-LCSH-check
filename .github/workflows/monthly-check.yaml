@@ -10,6 +10,7 @@ env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
   ASSIGNEES: charlottekostelic
+  DATE: $(date "+%Y%m%d-%H-%M-%S")
 jobs:
   monthly-run:
     name: Run monthly LCSH check
@@ -29,7 +30,6 @@ jobs:
 
       - name: Set date, create branch, run script
         run: |
-          echo "DATE=$(date '+%Y%m%d-%H-%M')" >> $GITHUB_ENV
           git checkout -b monthly_check_$DATE
           python monthly_lcsh_check.py
 
