@@ -58,18 +58,7 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
-      - name: Create PR
-        run: |
-          gh pr create \
-            --repo ${{ github.repository }} \
-            --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($DATE)" \
-            --body "$PR_BODY"
-
-      - name: Create Issue
+      - name: Test ISSUE_BODY var
         if: ${{ env.REVISED_LIST != 'false' && env.DEPRECATED_LIST != 'false'}}
         run: |
-          gh issue create \
-            --title "Changes to ACC LCSH ($DATE)" \
-            --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY"
+          echo "${{ env.ISSUE_BODY}}"
