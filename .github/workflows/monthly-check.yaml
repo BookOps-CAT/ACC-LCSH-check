@@ -1,7 +1,7 @@
 name: monthly lcsh check
 on: 
   schedule: 
-    - cron: '*/10 13-14 12 * *'
+    - cron: '*/5 13-14 12 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -24,7 +24,7 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Get date var
-        run: echo "DATE=$(date "+%Y%m%d-%H-%M")"  >> $GITHUB_ENV
+        run: echo "DATE=$(date "+%Y%m%d")"  >> $GITHUB_ENV
 
       - name: Create branch, run script
         run: |
@@ -40,7 +40,7 @@ jobs:
           git commit -a -m "LCSH Check $DATE"
           git push --set-upstream origin monthly_check_$DATE
 
-      - name: Parse output, create PR and Issue text
+      - name: Parse output, create PR and issue text
         run: |
           REVISED_LIST=$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
           DEPRECATED_LIST=$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
@@ -58,7 +58,18 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
-      - name: Test ISSUE_BODY var
+      - name: Create PR
+        run: |
+          gh pr create \
+            --repo ${{ github.repository }} \
+            --assignee "$ASSIGNEES" \
+            --title "Monthly LCSH check ($DATE)" \
+            --body "$PR_BODY"
+
+      - name: Create Issue
         if: ${{ env.REVISED_LIST != 'false' && env.DEPRECATED_LIST != 'false'}}
         run: |
-          echo "${{ env.ISSUE_BODY}}"
+          gh issue create \
+            --title "Changes to ACC LCSH ($DATE)" \
+            --assignee "$ASSIGNEES" \
+            --body "$ISSUE_BODY"
