@@ -3,7 +3,7 @@
 This repo contains a set of scripts to check [id.loc.gov](id.loc.gov) for changes made to LCSH. These scripts check for changes made in LCSH for a specific list of subject headings identified by the BPL Alternative Classification Committee. The script runs monthly on a schedule using GitHub Actions (see `.github\workflows\monthly-run.yaml` for workflow).
 
 ### Workflow
-The `monthly_lcsh_check.py` script runs every month on the 15th at 4AM EST. The script will read each term in `data/acc_in.csv` and check [id.loc.gov](id.loc.gov) for changes made in the last month. This monthly check is logged in `lcsh.log`. 
+The `monthly_lcsh_check.py` script runs every month on the 15th at 4:05AM EST. The script will read each term in `data/acc_in.csv` and check [id.loc.gov](id.loc.gov) for changes made in the last month. This monthly check is logged in `lcsh.log`. 
 
 ### Output
 Each monthly run will result in the workflow opening a pull request in this repo. If no changes have been made in the previous month to any of the LCSH in `acc_in.csv`, the PR will only include changes made to `lcsh.log` logging the results of the monthly run. 
