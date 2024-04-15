@@ -27,7 +27,7 @@ jobs:
       - name: Get date var
         run: |
           echo "CHECK_DATE=$(date "+%Y-%m-%d")"  >> $GITHUB_ENV
-          echo "DATE=$(date "+%Y-%m-%d-%H")"  >> $GITHUB_ENV
+          echo "DATE=$(date "+%Y-%m-%d-%H-%M")"  >> $GITHUB_ENV
 
       - name: Create branch, run script
         run: |
