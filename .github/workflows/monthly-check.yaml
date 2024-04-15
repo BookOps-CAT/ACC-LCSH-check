@@ -24,7 +24,8 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Get date var
-        run: echo "DATE=$(date "+%Y%m%d")"  >> $GITHUB_ENV
+        run: |
+          echo "DATE=$(date "+%Y-%m-%d")"  >> $GITHUB_ENV
 
       - name: Create branch, run script
         run: |
@@ -42,24 +43,25 @@ jobs:
 
       - name: Parse output, create PR and issue text
         run: |
-          REVISED_LIST=$(grep "DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
-          DEPRECATED_LIST=$(grep "DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
+          REVISED_LIST=$(grep -E "$DATE .+DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
+          DEPRECATED_LIST=$(grep -E "$DATE .+DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
           {
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "$(grep -q 'DEBUG' lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_${{ env.DATE }}' || echo '')"
+            echo "$(grep -Eq "$DATE .+DEBUG" lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_${{ env.DATE }}' || echo '')"
             echo EOF
           } >> $GITHUB_ENV
           {
             echo "ISSUE_BODY<<EOF"
-            echo "$(grep -q 'DEBUG - Revised' lcsh.log && echo '### Changed:' && echo "$REVISED_LIST" || '$(grep -q "DEBUG - Revised" lcsh.log)')"
-            echo "$(grep -q 'DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && echo "$DEPRECATED_LIST" || '$(grep -q "DEBUG - Deprecated" lcsh.log)')"
+            echo "$(grep -Eq "$DATE .+DEBUG - Revised" lcsh.log && echo '### Changed:' && echo "$REVISED_LIST" || '$(grep -Eq "$DATE .+DEBUG - Revised" lcsh.log)')"
+            echo "$(grep -Eq "$DATE .+DEBUG - Deprecated" lcsh.log && echo '### Deprecated:' && echo "$DEPRECATED_LIST" || '$(grep -Eq "$DATE .+DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
 
       - name: Create PR
         run: |
+          echo "${{ env.PR_BODY }}"
           gh pr create \
             --repo ${{ github.repository }} \
             --assignee "$ASSIGNEES" \
@@ -69,7 +71,8 @@ jobs:
       - name: Create Issue
         if: ${{ env.REVISED_LIST != 'false' && env.DEPRECATED_LIST != 'false'}}
         run: |
+          echo "${{ env.ISSUE_BODY }}"
           gh issue create \
             --title "Changes to ACC LCSH ($DATE)" \
             --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY"
+            --body "$ISSUE_BODY"          
