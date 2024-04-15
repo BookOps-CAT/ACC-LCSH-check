@@ -4,7 +4,7 @@ if __name__ == "__main__":
     logger = LogSession(
         logger_name="monthly_lcsh_check",
         logfile="lcsh.log",
-        infile="data/test_file.csv",
+        infile="data/acc_in.csv",
         outfile="data/acc_out.csv",
     )
     logger.run_logger()
