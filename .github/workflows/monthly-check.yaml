@@ -51,13 +51,13 @@ jobs:
             echo "PR_BODY<<EOF"
             echo "### Changed:"
             echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "$(grep -Eq '$CHECK_DATE .+DEBUG' lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_${{ env.DATE }}' || echo '')"
+            echo "$(grep -Eq "$CHECK_DATE .+DEBUG" lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_${{ env.DATE }}' || echo '')"
             echo EOF
           } >> $GITHUB_ENV
           {
             echo "ISSUE_BODY<<EOF"
-            echo "$(grep -Eq 'grep -E "$CHECK_DATE .+DEBUG - Revised' lcsh.log && echo '### Changed:' && echo "$REVISED_LIST" || '$(grep -Eq "$CHECK_DATE .+DEBUG - Revised" lcsh.log)')"
-            echo "$(grep -Eq 'grep -E "$CHECK_DATE .+DEBUG - Deprecated' lcsh.log && echo '### Deprecated:' && echo "$DEPRECATED_LIST" || '$(grep -Eq "$CHECK_DATE .+DEBUG - Deprecated" lcsh.log)')"
+            echo "$(grep -Eq "$CHECK_DATE .+DEBUG - Revised" lcsh.log && echo '### Changed:' && echo "$REVISED_LIST" || '$(grep -Eq "$CHECK_DATE .+DEBUG - Revised" lcsh.log)')"
+            echo "$(grep -Eq "$CHECK_DATE .+DEBUG - Deprecated" lcsh.log && echo '### Deprecated:' && echo "$DEPRECATED_LIST" || '$(grep -Eq "$CHECK_DATE .+DEBUG - Deprecated" lcsh.log)')"
             echo EOF
           } >> $GITHUB_ENV
 
