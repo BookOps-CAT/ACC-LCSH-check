@@ -2,3 +2,6 @@
 2024-04-12 14:52:52,231 - DEBUG - Revised terms to check: ['sh96000082']
 2024-04-12 14:52:52,231 - DEBUG - Deprecated terms to check: ['sh96010654']
 2024-04-12 14:52:52,231 - INFO - Updated list of current terms is in data/acc_out.csv
+2024-04-16 13:28:02,076 - INFO - Checking id.loc.gov
+2024-04-16 13:28:02,076 - INFO - No changes to ACC terms this month.
+2024-04-16 13:28:02,076 - INFO - Updated list of current terms is in data/acc_out.csv
