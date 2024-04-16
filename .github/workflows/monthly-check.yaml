@@ -1,11 +1,7 @@
 name: monthly lcsh check
-# on: 
-#   schedule: 
-#     - cron: '5 9 15 * *'
-on:
-  push: 
-    branches:
-      - main
+on: 
+  schedule: 
+    - cron: '5 9 15 * *'
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -29,7 +25,7 @@ jobs:
 
       - name: Get date var
         run: |
-          echo "DATE=$(date "+%Y-%m-%d-$H")"  >> $GITHUB_ENV
+          echo "DATE=$(date "+%Y-%m-%d")"  >> $GITHUB_ENV
 
       - name: Create branch, run script
         run: |
