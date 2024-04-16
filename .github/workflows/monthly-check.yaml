@@ -1,7 +1,11 @@
 name: monthly lcsh check
-on: 
-  schedule: 
-    - cron: '5 9 16 * *'
+# on: 
+#   schedule: 
+#     - cron: '5 9 15 * *'
+on:
+  push: 
+    branches:
+      - main
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
@@ -43,6 +47,7 @@ jobs:
 
       - name: Parse output, create PR and issue text
         run: |
+          echo "CHANGED=$(grep -Eq "$DATE .+DEBUG" lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
           REVISED_LIST=$(grep -E "$DATE .+DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
           DEPRECATED_LIST=$(grep -E "$DATE .+DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
           {
@@ -69,10 +74,10 @@ jobs:
             --body "$PR_BODY"
 
       - name: Create Issue
-        if: ${{ env.REVISED_LIST != 'false' && env.DEPRECATED_LIST != 'false'}}
+        if: ${{ env.CHANGED == 'true' }}
         run: |
           echo "${{ env.ISSUE_BODY }}"
           gh issue create \
             --title "Changes to ACC LCSH ($DATE)" \
             --assignee "$ASSIGNEES" \
-            --body "$ISSUE_BODY"          
+            --body "$ISSUE_BODY"
