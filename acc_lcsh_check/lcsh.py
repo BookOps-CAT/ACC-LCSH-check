@@ -1,5 +1,6 @@
 import datetime
 import requests
+from pymarc import Record
 
 
 class LCTerm:
@@ -18,9 +19,18 @@ class LCTerm:
         self.query = f"{self.url + self.id_type + '/' + self.id}"
 
         self._get_skos_json()
-        self._get_current_heading()
-        self._get_changes()
-        self._compare_headings()
+        if self.status_code == 200:
+            self._get_current_heading()
+            self._get_changes()
+            self._compare_headings()
+        else:
+            self.skos_json = None
+            self.current_heading = None
+            self.changes = None
+            self.recent_change = None
+            self.is_deprecated = None
+            self.deprecated_date = None
+            self.revised_heading = None
 
     def _get_id_type(self):
         if self.id[:2] == "sh":
@@ -34,10 +44,10 @@ class LCTerm:
         """
         Send request to id.loc.gov and get the response in .skos.json format.
         """
-
         skos_json_response = requests.get(f"{self.query + self.format}")
-        self.skos_json = skos_json_response.json()
-        return self.skos_json
+        if skos_json_response.ok is True:
+            self.skos_json = skos_json_response.json()
+        self.status_code = skos_json_response.status_code
 
     def _get_current_heading(self):
         """
@@ -105,3 +115,16 @@ class LCTerm:
             self.revised_heading = True
         else:
             self.revised_heading = False
+
+    @classmethod
+    def fromMarcFile(cls, record: Record):
+        control_no = record["001"].data
+        id = control_no.replace(" ", "")
+        heading_fields = []
+        for field in record.fields:
+            if field.tag[0:1] == "1":
+                heading_fields.append(field.tag)
+        if len(heading_fields) == 1:
+            tag = str(heading_fields[0])
+            old_heading = record[tag].value()
+            return cls(id, old_heading)

@@ -129,7 +129,8 @@ temp/
 tests/data/*
 !tests/data/*_in.csv
 !lcsh.log
-
+*.mrk
+data/backstage/*
 
 # OSX
 .DS_Store
