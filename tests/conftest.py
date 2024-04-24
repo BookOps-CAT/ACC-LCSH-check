@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 import requests
+from pymarc import Record, Field, Subfield
 
 
 class MockLCResponseRevised:
@@ -9,6 +10,7 @@ class MockLCResponseRevised:
 
     def __init__(self):
         self.status_code = 200
+        self.ok = True
 
     def json(self):
         return [
@@ -47,6 +49,7 @@ class MockLCResponseDeprecated:
 
     def __init__(self):
         self.status_code = 200
+        self.ok = True
 
     def json(self):
         return [
@@ -85,6 +88,7 @@ class MockLCResponseNew:
 
     def __init__(self):
         self.status_code = 200
+        self.ok = True
 
     def json(self):
         change_date = datetime.datetime.strftime(
@@ -111,6 +115,20 @@ class MockLCResponseNew:
         ]
 
 
+class MockLCResponseError:
+    """Simulates auth server response to successful token request"""
+
+    def __init__(self):
+        self.status_code = 404
+        self.ok = False
+
+    def json(self):
+        return {
+            "code": 404,
+            "message": "Term not found.",
+        }
+
+
 @pytest.fixture
 def mock_revised_response(monkeypatch):
     def mock_lc_response(*args, **kwargs):
@@ -133,3 +151,25 @@ def mock_new_response(monkeypatch):
         return MockLCResponseNew()
 
     monkeypatch.setattr(requests, "get", mock_lc_response)
+
+
+@pytest.fixture
+def mock_error_response(monkeypatch):
+    def mock_lc_response(*args, **kwargs):
+        return MockLCResponseError()
+
+    monkeypatch.setattr(requests, "get", mock_lc_response)
+
+
+@pytest.fixture
+def mock_marc():
+    record = Record()
+    record.add_field(
+        Field(tag="001", data="n 123456789"),
+        Field(
+            tag="100",
+            indicators=[" ", " "],
+            subfields=[Subfield(code="a", value="Bar, Foo")],
+        ),
+    )
+    return record

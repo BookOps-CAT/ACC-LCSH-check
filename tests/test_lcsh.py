@@ -65,3 +65,16 @@ def test_new_term(heading_id, mock_new_response):
     assert term.recent_change is False
     assert term.is_deprecated is False
     assert term.revised_heading is False
+
+
+def test_heading_not_found(mock_error_response):
+    term = LCTerm(id="n123", old_heading="n321")
+    assert term.skos_json is None
+    assert term.is_deprecated is None
+    assert term.status_code == 404
+
+
+def test_fromMarcFile(mock_marc, mock_new_response):
+    term = LCTerm.fromMarcFile(record=mock_marc)
+    assert term.old_heading == "Bar, Foo"
+    assert term.id == "n123456789"
