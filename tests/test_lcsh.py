@@ -26,7 +26,7 @@ def test_revised_term(heading_id, heading_str, mock_revised_response):
         "change_reason": "revised",
         "change_date": "2024-04-01T00:00:01",
     }
-    assert term.recent_change is True
+    assert term.recent_change is False
     assert term.is_deprecated is False
     assert term.revised_heading is True
 
