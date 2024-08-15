@@ -11,3 +11,6 @@
 2024-07-15 09:18:58,249 - INFO - Checking id.loc.gov
 2024-07-15 09:18:58,249 - DEBUG - Revised terms to check: ['sh85022096', 'sh85036047', 'sh85059626']
 2024-07-15 09:18:58,250 - INFO - Updated list of current terms is in data/acc_out.csv
+2024-08-15 09:17:41,523 - INFO - Checking id.loc.gov
+2024-08-15 09:17:41,523 - INFO - No changes to ACC terms this month.
+2024-08-15 09:17:41,523 - INFO - Updated list of current terms is in data/acc_out.csv
