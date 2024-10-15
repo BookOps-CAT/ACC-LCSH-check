@@ -5,6 +5,12 @@ import requests
 from pymarc import Record, Field, Subfield
 
 
+class FakeUtcNow(datetime.datetime):
+    @classmethod
+    def now(cls, tz=datetime.timezone.utc):
+        return cls(2024, 6, 1, 1, 0, 0, 0, datetime.timezone.utc)
+
+
 class MockLCResponseRevised:
     """Mock response from id.loc.gov for a current term"""
 
@@ -13,6 +19,13 @@ class MockLCResponseRevised:
         self.ok = True
 
     def json(self):
+        change_date = datetime.datetime.strftime(
+            (
+                datetime.datetime.now(tz=datetime.timezone.utc)
+                - datetime.timedelta(days=60)
+            ),
+            "%Y-%m-%dT%H:%M:%S",
+        )
         return [
             {
                 "@id": "http://id.loc.gov/authorities/",
@@ -25,7 +38,7 @@ class MockLCResponseRevised:
                 "@id": "_:b83iddOtlocdOtgovauthorities",
                 "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
                 "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": "2020-01-01T00:00:01"}
+                    {"@value": str(change_date)}
                 ],
                 "http://purl.org/vocab/changeset/schema#changeReason": [
                     {"@value": "revised"}
@@ -52,6 +65,13 @@ class MockLCResponseDeprecated:
         self.ok = True
 
     def json(self):
+        change_date = datetime.datetime.strftime(
+            (
+                datetime.datetime.now(tz=datetime.timezone.utc)
+                - datetime.timedelta(days=7)
+            ),
+            "%Y-%m-%dT%H:%M:%S",
+        )
         return [
             {
                 "@id": "http://id.loc.gov/authorities/",
@@ -64,7 +84,7 @@ class MockLCResponseDeprecated:
                 "@id": "_:b83iddOtlocdOtgovauthorities",
                 "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
                 "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": "2023-04-01T00:00:01"}
+                    {"@value": str(change_date)}
                 ],
                 "http://purl.org/vocab/changeset/schema#changeReason": [
                     {"@value": "deprecated"}
@@ -91,7 +111,7 @@ class MockLCResponseNew:
         self.ok = True
 
     def json(self):
-        change_date = datetime.datetime.strftime(
+        create_date = datetime.datetime.strftime(
             datetime.datetime.now(), "%Y-%m-%dT%H:%M:%S"
         )
         return [
@@ -106,7 +126,7 @@ class MockLCResponseNew:
                 "@id": "_:b83iddOtlocdOtgovauthorities",
                 "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
                 "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": str(change_date)}
+                    {"@value": str(create_date)}
                 ],
                 "http://purl.org/vocab/changeset/schema#changeReason": [
                     {"@value": "new"}
@@ -135,6 +155,7 @@ def mock_revised_response(monkeypatch):
         return MockLCResponseRevised()
 
     monkeypatch.setattr(requests, "get", mock_lc_response)
+    monkeypatch.setattr(datetime, "datetime", FakeUtcNow)
 
 
 @pytest.fixture
@@ -143,6 +164,7 @@ def mock_deprecated_response(monkeypatch):
         return MockLCResponseDeprecated()
 
     monkeypatch.setattr(requests, "get", mock_lc_response)
+    monkeypatch.setattr(datetime, "datetime", FakeUtcNow)
 
 
 @pytest.fixture

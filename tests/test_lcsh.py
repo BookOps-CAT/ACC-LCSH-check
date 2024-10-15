@@ -24,7 +24,7 @@ def test_revised_term(heading_id, heading_str, mock_revised_response):
     assert term.current_heading == "Spam"
     assert term.changes[0] == {
         "change_reason": "revised",
-        "change_date": "2020-01-01T00:00:01",
+        "change_date": "2024-04-02T01:00:00",
     }
     assert term.recent_change is False
     assert term.is_deprecated is False
@@ -44,9 +44,9 @@ def test_deprecated_term(heading_id, mock_deprecated_response):
     assert term.current_heading == "Bar"
     assert term.changes[0] == {
         "change_reason": "deprecated",
-        "change_date": "2023-04-01T00:00:01",
+        "change_date": "2024-05-25T01:00:00",
     }
-    assert term.recent_change is False
+    assert term.recent_change is True
     assert term.is_deprecated is True
     assert term.revised_heading is True
 
@@ -78,3 +78,9 @@ def test_fromMarcFile(mock_marc, mock_new_response):
     term = LCTerm.fromMarcFile(record=mock_marc)
     assert term.old_heading == "Bar, Foo"
     assert term.id == "n123456789"
+
+
+def test_invalid_id(mock_new_response):
+    with pytest.raises(ValueError) as exc:
+        LCTerm(id="foo123", old_heading="Foo")
+    assert str(exc.value) == "ID type not recognized."

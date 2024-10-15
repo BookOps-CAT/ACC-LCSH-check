@@ -14,8 +14,7 @@ class LCTerm:
         self.format = ".skos.json"
         self.url = "https://id.loc.gov/authorities/"
 
-        self._get_id_type()
-
+        self.id_type = self._get_id_type()
         self.query = f"{self.url + self.id_type + '/' + self.id}"
 
         self._get_skos_json()
@@ -34,11 +33,13 @@ class LCTerm:
 
     def _get_id_type(self):
         if self.id[:2] == "sh":
-            self.id_type = "subjects"
+            return "subjects"
         elif self.id[:2] == "dg":
-            self.id_type = "demographicTerms"
+            return "demographicTerms"
         elif self.id[:1] == "n":
-            self.id_type = "names"
+            return "names"
+        else:
+            raise ValueError("ID type not recognized.")
 
     def _get_skos_json(self):
         """
@@ -69,7 +70,7 @@ class LCTerm:
         Parse response from id.loc.gov and determine if record has been changed
         in last month or if it is deprecated.
         """
-        today = datetime.datetime.now()
+        today = datetime.datetime.now(tz=datetime.timezone.utc)
         self.changes = []
         for item in self.skos_json:
             if "http://purl.org/vocab/changeset/schema#ChangeSet" in item["@type"][0]:
@@ -95,6 +96,7 @@ class LCTerm:
                 change_date = datetime.datetime.strptime(
                     change["change_date"], "%Y-%m-%dT%H:%M:%S"
                 )
+                change_date = change_date.replace(tzinfo=datetime.timezone.utc)
                 if change_date >= today - datetime.timedelta(days=31):
                     self.recent_change = True
                 else:
