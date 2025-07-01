@@ -1,4 +1,5 @@
 import datetime
+
 import requests
 from pymarc import Record
 
@@ -8,10 +9,9 @@ class LCTerm:
     A class that defines a LC subject heading.
     """
 
-    def __init__(self, id: str, old_heading: str) -> None:
+    def __init__(self, id: str, heading: str) -> None:
         self.id = id
-        self.old_heading = old_heading
-        self.format = ".skos.json"
+        self.heading = heading
         self.url = "https://id.loc.gov/authorities/"
 
         self.id_type = self._get_id_type()
@@ -41,11 +41,18 @@ class LCTerm:
         else:
             raise ValueError("ID type not recognized.")
 
+    def _get_heading(self, format: str):
+        """
+        Send request to id.loc.gov and get the response the specified format.
+        """
+        headers = {"user-agent": "BookOps-LCSH-checker/0.1"}
+        return requests.get(f"{self.query + format}", headers=headers)
+
     def _get_skos_json(self):
         """
         Send request to id.loc.gov and get the response in .skos.json format.
         """
-        skos_json_response = requests.get(f"{self.query + self.format}")
+        skos_json_response = self._get_heading(format=".skos.json")
         if skos_json_response.ok is True:
             self.skos_json = skos_json_response.json()
         self.status_code = skos_json_response.status_code
@@ -113,20 +120,22 @@ class LCTerm:
         Sometimes headings are marked as revised in id.loc.gov without changing the
         heading. This function checks if the heading is the same as the ACC term.
         """
-        if str(self.current_heading).lower() != str(self.old_heading).lower():
+        if str(self.current_heading).lower() != str(self.heading).lower():
             self.revised_heading = True
         else:
             self.revised_heading = False
 
     @classmethod
     def fromMarcFile(cls, record: Record):
-        control_no = record["001"].data
-        id = control_no.replace(" ", "")
+        id = ""
+        control_no = record.get("001")
+        if control_no and control_no.data:
+            id = control_no.data.replace(" ", "")
         heading_fields = []
         for field in record.fields:
             if field.tag[0:1] == "1":
                 heading_fields.append(field.tag)
         if len(heading_fields) == 1:
             tag = str(heading_fields[0])
-            old_heading = record[tag].value()
-            return cls(id, old_heading)
+            heading = record[tag].value()
+            return cls(id, heading)
