@@ -24,10 +24,10 @@ class LogSession:
         self.logger.addHandler(self.logger_handler)
         self._check_terms()
 
-    def _check_terms(self):
-        deprecated_terms = []
-        revised_terms = []
-        current_terms = []
+    def _check_terms(self) -> dict[str, list[str]]:
+        deprecated_terms: list[str] = []
+        revised_terms: list[str] = []
+        current_terms: list[str] = []
 
         with open(self.infile, "r") as csvfile:
             reader = csv.reader(csvfile)
@@ -48,7 +48,7 @@ class LogSession:
         }
         return self.session_data
 
-    def run_logger(self):
+    def run_logger(self) -> None:
         if os.path.exists(f"{self.outfile}"):
             os.remove(f"{self.outfile}")
 
@@ -67,7 +67,7 @@ class LogSession:
             self.logger.debug(f"Deprecated terms to check: {deprecated}")
         self.logger.info(f"Updated list of current terms is in {self.outfile}")
 
-    def rename_files(self):
+    def rename_files(self) -> None:
         today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
         if os.path.exists(f"{self.infile.split('.')[0]}_{today}.csv"):
             os.remove(f"{self.infile.split('.')[0]}_{today}.csv")
