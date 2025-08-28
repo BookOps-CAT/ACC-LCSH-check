@@ -1,20 +1,20 @@
-[tool.poetry]
+[project]
 name = "acc-lcsh-check"
 version = "0.1.0"
 description = "LCSH checker for ACC terms"
-authors = ["Charlotte Kostelic <charlottekostelic@gmail.com>"]
+authors = [{name = "Charlotte Kostelic",email = "charlottekostelic@gmail.com"}]
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.12"
-requests = "^2.32.0"
-types-requests = "^2.31.0.20240311"
-pymarc = "^5.1.2"
-google-api-python-client = "^2.146.0"
-google-auth-oauthlib = "^1.2.1"
-pandas = "^2.2.2"
-pandas-stubs = "^2.2.1.240316"
-
+requires-python = ">=3.12"
+dependencies = [
+    "requests (>=2.32)",
+    "types-requests (>=2.31)",
+    "pymarc (>=5.1)",
+    "google-api-python-client (>=2.146)",
+    "google-auth-oauthlib (>=1.2)",
+    "pandas (>=2.2)",
+    "pandas-stubs (>=2.2.1.240316)"
+]
+license = "MIT"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
@@ -27,6 +27,19 @@ testpaths = ["tests"]
 [tool.coverage.run]
 relative_files = true
 source = ["."]
+omit = [
+    "tests/*",
+    "backstage_deletes.py",
+    "monthly_lcsh_check.py"
+]
+
+[tool.mypy]
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
 
 [build-system]
 requires = ["poetry-core"]
