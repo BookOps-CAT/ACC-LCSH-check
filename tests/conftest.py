@@ -1,14 +1,21 @@
 import datetime
+import os
 
+import pandas as pd
 import pytest
 import requests
-from pymarc import Record, Field, Subfield
+from pymarc import Field, Record, Subfield
 
 
 class FakeUtcNow(datetime.datetime):
     @classmethod
     def now(cls, tz=datetime.timezone.utc):
         return cls(2024, 6, 1, 1, 0, 0, 0, datetime.timezone.utc)
+
+
+@pytest.fixture
+def mock_now(monkeypatch) -> None:
+    monkeypatch.setattr(datetime, "datetime", FakeUtcNow)
 
 
 class MockLCResponseRevised:
@@ -150,21 +157,19 @@ class MockLCResponseError:
 
 
 @pytest.fixture
-def mock_revised_response(monkeypatch):
+def mock_revised_response(monkeypatch, mock_now):
     def mock_lc_response(*args, **kwargs):
         return MockLCResponseRevised()
 
     monkeypatch.setattr(requests, "get", mock_lc_response)
-    monkeypatch.setattr(datetime, "datetime", FakeUtcNow)
 
 
 @pytest.fixture
-def mock_deprecated_response(monkeypatch):
+def mock_deprecated_response(monkeypatch, mock_now):
     def mock_lc_response(*args, **kwargs):
         return MockLCResponseDeprecated()
 
     monkeypatch.setattr(requests, "get", mock_lc_response)
-    monkeypatch.setattr(datetime, "datetime", FakeUtcNow)
 
 
 @pytest.fixture
@@ -195,3 +200,142 @@ def mock_marc():
         ),
     )
     return record
+
+
+class MockCreds:
+    def __init__(self):
+        self.token = "foo"
+        self.refresh_token = "bar"
+
+    @property
+    def valid(self, *args, **kwargs):
+        return True
+
+    @property
+    def expired(self, *args, **kwargs):
+        return False
+
+    def refresh(self, *args, **kwargs):
+        self.expired = False
+        self.valid = True
+
+    def to_json(self, *args, **kwargs):
+        pass
+
+    def run_local_server(self, *args, **kwargs):
+        return self
+
+
+@pytest.fixture
+def mock_open_file(mocker) -> None:
+    token = """{"token": "foo","refresh_token": "bar","token_uri": "baz","client_id": "foo","client_secret": "bar","universe_domain": "foo","account": "bar","expiry": "2025-01-06T15:53:41.298707Z"}"""
+    m = mocker.mock_open(read_data=token)
+    mocker.patch("acc_lcsh_check.backstage_utils.open", m)
+    mocker.patch.dict(os.environ, {"USERPROFILE": "test"})
+    mocker.patch("os.path.exists", lambda *args, **kwargs: True)
+
+
+@pytest.fixture
+def mock_read_csv(monkeypatch) -> None:
+    def mock_df(*args, **kwargs):
+        return pd.DataFrame(
+            data={
+                "RECORD_NUMBER": ["123"],
+                "LCCN": ["20251234567890"],
+                "heading1": ["FOO"],
+                "heading2": ["BAR"],
+                "heading3": ["BAZ"],
+            }
+        )
+
+    monkeypatch.setattr(pd, "read_csv", mock_df)
+    monkeypatch.setattr("os.path.exists", lambda *args, **kwargs: False)
+
+
+@pytest.fixture
+def mock_read_csv_exists(monkeypatch) -> None:
+    def mock_df(*args, **kwargs):
+        return pd.DataFrame(
+            data={
+                "RECORD_NUMBER": ["123"],
+                "LCCN": ["20251234567890"],
+                "NORMALIZED_LCCN": ["FOO"],
+                "HEADING_FROM_MARC_FILE": ["BAR"],
+            }
+        )
+
+    monkeypatch.setattr(pd, "read_csv", mock_df)
+    monkeypatch.setattr("os.path.exists", lambda *args, **kwargs: True)
+
+
+@pytest.fixture
+def mock_sheet_config(monkeypatch, mock_open_file):
+    def build_sheet(*args, **kwargs):
+        return MockResource()
+
+    monkeypatch.setattr("googleapiclient.discovery.build", build_sheet)
+    monkeypatch.setattr("googleapiclient.discovery.build_from_document", build_sheet)
+    monkeypatch.setattr(
+        "google.oauth2.credentials.Credentials.from_authorized_user_info",
+        lambda *args, **kwargs: MockCreds(),
+    )
+    monkeypatch.setattr("acc_lcsh_check.backstage_utils.load_creds", lambda *args: None)
+    monkeypatch.setenv("GOOGLE_SHEET_TOKEN", "foo")
+    monkeypatch.setenv("GOOGLE_SHEET_REFRESH_TOKEN", "bar")
+    monkeypatch.setenv("GOOGLE_SHEET_CLIENT_ID", "baz")
+    monkeypatch.setenv("GOOGLE_SHEET_CLIENT_SECRET", "qux")
+
+
+@pytest.fixture
+def mock_sheet_config_expired_creds(monkeypatch, mock_sheet_config):
+    monkeypatch.setattr(MockCreds, "valid", False)
+    monkeypatch.setattr(MockCreds, "expired", True)
+
+
+@pytest.fixture
+def mock_sheet_config_no_creds(monkeypatch, mock_sheet_config):
+    monkeypatch.setattr(
+        "google_auth_oauthlib.flow.InstalledAppFlow.from_client_config",
+        lambda *args, **kwargs: MockCreds(),
+    )
+    monkeypatch.setattr(
+        "google.oauth2.credentials.Credentials.from_authorized_user_info",
+        lambda *args, **kwargs: None,
+    )
+
+
+@pytest.fixture
+def mock_sheet_config_invalid_creds(monkeypatch, mock_sheet_config):
+    def mock_error(*args, **kwargs):
+        raise ValueError
+
+    monkeypatch.setattr(
+        "google.oauth2.credentials.Credentials.from_authorized_user_info", mock_error
+    )
+
+
+class MockResource:
+    def __init__(self):
+        self.spreadsheetId = "foo"
+        self.range = "bar"
+
+    def append(self, *args, **kwargs):
+        return self
+
+    def execute(self, *args, **kwargs):
+        return dict(spreadsheetId=self.spreadsheetId, tableRange=self.range)
+
+    def spreadsheets(self, *args, **kwargs):
+        return self
+
+    def values(self, *args, **kwargs):
+        return self
+
+
+@pytest.fixture
+def mock_sheet_timeout_error(monkeypatch):
+    def mock_error(*args, **kwargs):
+        raise TimeoutError
+
+    monkeypatch.setattr("googleapiclient.discovery.build", mock_error)
+    monkeypatch.setattr("googleapiclient.discovery.build_from_document", mock_error)

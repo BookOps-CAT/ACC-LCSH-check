@@ -14,11 +14,10 @@ from acc_lcsh_check.lcsh import LCTerm
 def test_revised_term(heading_id, heading_str, mock_revised_response):
     term = LCTerm(
         id=heading_id,
-        old_heading=heading_str,
+        heading=heading_str,
     )
     assert term.id == heading_id
-    assert term.old_heading == heading_str
-    assert term.format == ".skos.json"
+    assert term.heading == heading_str
     assert term.url == "https://id.loc.gov/authorities/"
     assert term.query == f"{term.url + term.id_type + '/' + heading_id}"
     assert term.current_heading == "Spam"
@@ -36,9 +35,8 @@ def test_revised_term(heading_id, heading_str, mock_revised_response):
     ["sh111", "na222", "dg333"],
 )
 def test_deprecated_term(heading_id, mock_deprecated_response):
-    term = LCTerm(id=heading_id, old_heading="Foo")
+    term = LCTerm(id=heading_id, heading="Foo")
     assert term.id == heading_id
-    assert term.format == ".skos.json"
     assert term.url == "https://id.loc.gov/authorities/"
     assert term.query == f"{term.url + term.id_type + '/' + heading_id}"
     assert term.current_heading == "Bar"
@@ -56,9 +54,8 @@ def test_deprecated_term(heading_id, mock_deprecated_response):
     ["sh111", "na222", "dg333"],
 )
 def test_new_term(heading_id, mock_new_response):
-    term = LCTerm(id=heading_id, old_heading="Foo")
+    term = LCTerm(id=heading_id, heading="Foo")
     assert term.id == heading_id
-    assert term.format == ".skos.json"
     assert term.url == "https://id.loc.gov/authorities/"
     assert term.query == f"{term.url + term.id_type + '/' + heading_id}"
     assert term.current_heading == "Foo"
@@ -68,7 +65,7 @@ def test_new_term(heading_id, mock_new_response):
 
 
 def test_heading_not_found(mock_error_response):
-    term = LCTerm(id="n123", old_heading="n321")
+    term = LCTerm(id="n123", heading="n321")
     assert term.skos_json is None
     assert term.is_deprecated is None
     assert term.status_code == 404
@@ -76,11 +73,11 @@ def test_heading_not_found(mock_error_response):
 
 def test_fromMarcFile(mock_marc, mock_new_response):
     term = LCTerm.fromMarcFile(record=mock_marc)
-    assert term.old_heading == "Bar, Foo"
+    assert term.heading == "Bar, Foo"
     assert term.id == "n123456789"
 
 
 def test_invalid_id(mock_new_response):
     with pytest.raises(ValueError) as exc:
-        LCTerm(id="foo123", old_heading="Foo")
+        LCTerm(id="foo123", heading="Foo")
     assert str(exc.value) == "ID type not recognized."
