@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 
 import requests
@@ -16,6 +18,14 @@ class LCTerm:
 
         self.id_type = self._get_id_type()
         self.query = f"{self.url + self.id_type + '/' + self.id}"
+        self.status_code: int
+        self.skos_json: list[dict] | None
+        self.current_heading: str | None
+        self.changes: list[dict] | None
+        self.recent_change: bool | None
+        self.is_deprecated: bool | None
+        self.deprecated_date: datetime.datetime | None
+        self.revised_heading: bool | None
 
         self._get_skos_json()
         if self.status_code == 200:
@@ -31,7 +41,7 @@ class LCTerm:
             self.deprecated_date = None
             self.revised_heading = None
 
-    def _get_id_type(self):
+    def _get_id_type(self) -> str:
         if self.id[:2] == "sh":
             return "subjects"
         elif self.id[:2] == "dg":
@@ -41,14 +51,14 @@ class LCTerm:
         else:
             raise ValueError("ID type not recognized.")
 
-    def _get_heading(self, format: str):
+    def _get_heading(self, format: str) -> requests.Response:
         """
         Send request to id.loc.gov and get the response the specified format.
         """
         headers = {"user-agent": "BookOps-LCSH-checker/0.1"}
         return requests.get(f"{self.query + format}", headers=headers)
 
-    def _get_skos_json(self):
+    def _get_skos_json(self) -> None:
         """
         Send request to id.loc.gov and get the response in .skos.json format.
         """
@@ -57,10 +67,12 @@ class LCTerm:
             self.skos_json = skos_json_response.json()
         self.status_code = skos_json_response.status_code
 
-    def _get_current_heading(self):
+    def _get_current_heading(self) -> None:
         """
         Parse response from id.loc.gov and get current heading.
         """
+        if not self.skos_json:
+            return None
         for item in self.skos_json:
             if "id.loc.gov/authorities/" in item["@id"]:
                 if "http://www.w3.org/2004/02/skos/core#prefLabel" in item:
@@ -72,13 +84,15 @@ class LCTerm:
                         "http://www.w3.org/2008/05/skos-xl#literalForm"
                     ][0]["@value"]
 
-    def _get_changes(self):
+    def _get_changes(self) -> None:
         """
         Parse response from id.loc.gov and determine if record has been changed
         in last month or if it is deprecated.
         """
         today = datetime.datetime.now(tz=datetime.timezone.utc)
         self.changes = []
+        if not self.skos_json:
+            return None
         for item in self.skos_json:
             if "http://purl.org/vocab/changeset/schema#ChangeSet" in item["@type"][0]:
                 self.changes.append(
@@ -115,7 +129,7 @@ class LCTerm:
                     self.is_deprecated = False
                     self.deprecated_date = None
 
-    def _compare_headings(self):
+    def _compare_headings(self) -> None:
         """
         Sometimes headings are marked as revised in id.loc.gov without changing the
         heading. This function checks if the heading is the same as the ACC term.
@@ -126,7 +140,7 @@ class LCTerm:
             self.revised_heading = False
 
     @classmethod
-    def fromMarcFile(cls, record: Record):
+    def fromMarcFile(cls, record: Record) -> LCTerm:
         id = ""
         control_no = record.get("001")
         if control_no and control_no.data:
@@ -135,7 +149,6 @@ class LCTerm:
         for field in record.fields:
             if field.tag[0:1] == "1":
                 heading_fields.append(field.tag)
-        if len(heading_fields) == 1:
-            tag = str(heading_fields[0])
-            heading = record[tag].value()
-            return cls(id, heading)
+        tag = str(heading_fields[0])
+        heading = record[tag].value()
+        return cls(id, heading)
