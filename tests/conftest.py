@@ -247,8 +247,11 @@ def mock_read_csv(monkeypatch) -> None:
                 "heading3": ["BAZ"],
             }
         )
+    def mock_to_csv(*args, **kwargs):
+        return None   
 
     monkeypatch.setattr(pd, "read_csv", mock_df)
+    monkeypatch.setattr("pandas.DataFrame.to_csv", mock_to_csv)    
     monkeypatch.setattr("os.path.exists", lambda *args, **kwargs: False)
 
 

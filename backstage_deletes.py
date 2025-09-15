@@ -11,7 +11,7 @@ from acc_lcsh_check.backstage_utils import (
 from acc_lcsh_check.lcsh import LCTerm
 
 
-def get_lc_results(row) -> list:
+def get_lc_results(row: pd.Series) -> list[str]:
     term = LCTerm(row.iloc[2], row.iloc[3])
     out = [
         row.iloc[0],
