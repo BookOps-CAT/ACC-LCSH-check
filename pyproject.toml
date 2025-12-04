@@ -2,7 +2,7 @@
 name = "acc-lcsh-check"
 version = "0.1.0"
 description = "LCSH checker for ACC terms"
-authors = [{name = "Charlotte Kostelic",email = "charlottekostelic@gmail.com"}]
+authors = [{name = "Charlotte Kostelic",email = "charlottekostelic@bookops.org"}]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
