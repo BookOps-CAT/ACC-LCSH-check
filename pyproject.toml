@@ -6,21 +6,21 @@ authors = [{name = "Charlotte Kostelic",email = "charlottekostelic@bookops.org"}
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "requests (>=2.32)",
-    "types-requests (>=2.31)",
-    "pymarc (>=5.1)",
-    "google-api-python-client (>=2.146)",
-    "google-auth-oauthlib (>=1.2)",
-    "pandas (>=2.2)",
-    "pandas-stubs (>=2.2.1.240316)"
+    "requests (>=2.34)",
+    "types-requests (>=2.33.0.20260518)",
+    "pymarc (>=5.3.1)",
+    "google-api-python-client (>=2.196)",
+    "google-auth-oauthlib (>=1.4)",
+    "pandas (>=3.0)",
+    "pandas-stubs (>=3.0.0.260204)"
 ]
 license = "MIT"
 
 [dependency-groups]
 dev = [
-    "pytest>=8.1.1",
-    "pytest-cov>=5.0.0",
-    "pytest-mock>=3.14.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.15.1",
 ]
 
 [tool.pytest.ini_options]

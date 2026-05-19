@@ -36,20 +36,20 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "google-api-python-client", specifier = ">=2.146" },
-    { name = "google-auth-oauthlib", specifier = ">=1.2" },
-    { name = "pandas", specifier = ">=2.2" },
-    { name = "pandas-stubs", specifier = ">=2.2.1.240316" },
-    { name = "pymarc", specifier = ">=5.1" },
-    { name = "requests", specifier = ">=2.32" },
-    { name = "types-requests", specifier = ">=2.31" },
+    { name = "google-api-python-client", specifier = ">=2.196" },
+    { name = "google-auth-oauthlib", specifier = ">=1.4" },
+    { name = "pandas", specifier = ">=3.0" },
+    { name = "pandas-stubs", specifier = ">=3.0.0.260204" },
+    { name = "pymarc", specifier = ">=5.3.1" },
+    { name = "requests", specifier = ">=2.34" },
+    { name = "types-requests", specifier = ">=2.33.0.20260518" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pytest", specifier = ">=8.1.1" },
-    { name = "pytest-cov", specifier = ">=5.0.0" },
-    { name = "pytest-mock", specifier = ">=3.14.0" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-mock", specifier = ">=3.15.1" },
 ]
 
 [[package]]
