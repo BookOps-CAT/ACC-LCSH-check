@@ -9,16 +9,15 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]    
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v6
+      - name: Install uv and set python version
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.12"
-
-      - name: Install uv
-        run: pipx install uv
+          python-version: ${{ matrix.python-version }}
 
       - name: Run tests
         run: uv run pytest --cov=acc_lcsh_check/
@@ -26,5 +25,16 @@ jobs:
       - name: Send report to Coveralls
         uses: coverallsapp/github-action@v2
         with:
-          fail-on-error: false                    
+          parallel: true
           github-token: ${{ secrets.GITHUB_TOKEN}}
+          flag-name: ${{ matrix.python-version}}
+          fail-on-error: false    
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true
+          fail-on-error: false          
