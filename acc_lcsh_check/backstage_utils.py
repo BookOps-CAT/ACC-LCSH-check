@@ -60,7 +60,7 @@ def configure_sheet() -> Credentials:
 
 
 def get_date() -> str:
-    today = datetime.datetime.now(tz=datetime.timezone.utc)
+    today = datetime.datetime.now()
     return datetime.datetime.strftime(today, "%y%m%d")
 
 

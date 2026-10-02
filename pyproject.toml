@@ -25,7 +25,10 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = '--cov=acc_lcsh_check/'
+markers = [
+    "livetest: mark a test hitting live web services"
+]
+addopts = '-m "not livetest" --cov=acc_lcsh_check/'
 
 [tool.coverage.run]
 branch = true
@@ -44,6 +47,9 @@ disallow_untyped_defs = true
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = false
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "ANN"]
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,47 +1,76 @@
 from __future__ import annotations
 
 import datetime
+import io
+from functools import cached_property
 
 import requests
-from pymarc import Record
+from pymarc import Record, parse_xml_to_array
 
 
 class LCTerm:
-    """
-    A class that defines a LC subject heading.
-    """
+    """A class that defines a LC subject heading."""
+
+    STATUS = {
+        "c": "revised",
+        "d": "deprecated",
+        "n": "new",
+        "o": "deprecated",
+        "s": "deprecated",
+        "x": "deprecated",
+    }
 
     def __init__(self, id: str, heading: str) -> None:
         self.id = id
         self.heading = heading
-        self.url = "https://id.loc.gov/authorities/"
 
-        self.id_type = self._get_id_type()
-        self.query = f"{self.url + self.id_type + '/' + self.id}"
-        self.status_code: int
-        self.skos_json: list[dict] | None
-        self.current_heading: str | None
-        self.changes: list[dict] | None
-        self.recent_change: bool | None
-        self.is_deprecated: bool | None
-        self.deprecated_date: datetime.datetime | None
-        self.revised_heading: bool | None
-
-        self._get_skos_json()
+    @cached_property
+    def marc_xml(self) -> Record | None:
         if self.status_code == 200:
-            self._get_current_heading()
-            self._get_changes()
-            self._compare_headings()
-        else:
-            self.skos_json = None
-            self.current_heading = None
-            self.changes = None
-            self.recent_change = None
-            self.is_deprecated = None
-            self.deprecated_date = None
-            self.revised_heading = None
+            xml_data = self.xml_response.content
+            return parse_xml_to_array(io.BytesIO(xml_data))[0]
+        return None
 
-    def _get_id_type(self) -> str:
+    @cached_property
+    def xml_response(self) -> requests.Response:
+        """Send request to id.loc.gov and return the response."""
+        query = f"https://id.loc.gov/authorities/{self.id_type}/{self.id}.marcxml.xml"
+        return requests.get(query, headers={"user-agent": "BookOps-LCSH-checker/0.1"})
+
+    @cached_property
+    def status_code(self) -> int:
+        return self.xml_response.status_code
+
+    @property
+    def change_date(self) -> str | None:
+        if self.change_type == "new" or not self.marc_xml:
+            return None
+        return getattr(self.marc_xml.get("005"), "data", "")
+
+    @property
+    def change_type(self) -> str | None:
+        if self.marc_xml:
+            return self.STATUS[self.marc_xml.leader[5]]
+        return None
+
+    @property
+    def current_heading(self) -> str | None:
+        """
+        Parse response from id.loc.gov and get current heading.
+        """
+        if not self.marc_xml:
+            return None
+        fields_1xx = [i for i in self.marc_xml.fields if i.tag.startswith("1")]
+        return fields_1xx[0]["a"]
+
+    @property
+    def deprecated_date(self) -> str | None:
+        if self.is_deprecated:
+            return self.change_date
+        return None
+
+    @property
+    def id_type(self) -> str:
         if self.id[:2] == "sh":
             return "subjects"
         elif self.id[:2] == "dg":
@@ -51,100 +80,39 @@ class LCTerm:
         else:
             raise ValueError("ID type not recognized.")
 
-    def _get_heading(self, format: str) -> requests.Response:
-        """
-        Send request to id.loc.gov and get the response the specified format.
-        """
-        headers = {"user-agent": "BookOps-LCSH-checker/0.1"}
-        return requests.get(f"{self.query + format}", headers=headers)
+    @property
+    def is_deprecated(self) -> bool:
+        if self.change_type == "deprecated":
+            return True
+        return False
 
-    def _get_skos_json(self) -> None:
-        """
-        Send request to id.loc.gov and get the response in .skos.json format.
-        """
-        skos_json_response = self._get_heading(format=".skos.json")
-        if skos_json_response.ok is True:
-            self.skos_json = skos_json_response.json()
-        self.status_code = skos_json_response.status_code
+    @property
+    def recent_change(self) -> bool:
+        if self.change_type == "new" or not self.change_date:
+            return False
+        change_datetime = datetime.datetime.strptime(
+            self.change_date, "%Y-%m-%dT%H:%M:%S"
+        )
+        today = datetime.datetime.now()
+        if change_datetime >= (today - datetime.timedelta(days=31)):
+            return True
+        return False
 
-    def _get_current_heading(self) -> None:
-        """
-        Parse response from id.loc.gov and get current heading.
-        """
-        if not self.skos_json:
-            return None
-        for item in self.skos_json:
-            if "id.loc.gov/authorities/" in item["@id"]:
-                if "http://www.w3.org/2004/02/skos/core#prefLabel" in item:
-                    self.current_heading = item[
-                        "http://www.w3.org/2004/02/skos/core#prefLabel"
-                    ][0]["@value"]
-                else:
-                    self.current_heading = item[
-                        "http://www.w3.org/2008/05/skos-xl#literalForm"
-                    ][0]["@value"]
-
-    def _get_changes(self) -> None:
-        """
-        Parse response from id.loc.gov and determine if record has been changed
-        in last month or if it is deprecated.
-        """
-        today = datetime.datetime.now(tz=datetime.timezone.utc)
-        self.changes = []
-        if not self.skos_json:
-            return None
-        for item in self.skos_json:
-            if "http://purl.org/vocab/changeset/schema#ChangeSet" in item["@type"][0]:
-                self.changes.append(
-                    {
-                        "change_reason": (
-                            item["http://purl.org/vocab/changeset/schema#changeReason"][
-                                0
-                            ]["@value"]
-                        ),
-                        "change_date": (
-                            item["http://purl.org/vocab/changeset/schema#createdDate"][
-                                0
-                            ]["@value"]
-                        ),
-                    }
-                )
-            revisions = [c for c in self.changes if c["change_reason"] != "new"]
-            if revisions == []:
-                self.recent_change = False
-                self.is_deprecated = False
-            for change in revisions:
-                change_date = datetime.datetime.strptime(
-                    change["change_date"], "%Y-%m-%dT%H:%M:%S"
-                )
-                change_date = change_date.replace(tzinfo=datetime.timezone.utc)
-                if change_date >= today - datetime.timedelta(days=31):
-                    self.recent_change = True
-                else:
-                    self.recent_change = False
-                if "deprecated" in change["change_reason"]:
-                    self.is_deprecated = True
-                    self.deprecated_date = change_date
-                else:
-                    self.is_deprecated = False
-                    self.deprecated_date = None
-
-    def _compare_headings(self) -> None:
-        """
-        Sometimes headings are marked as revised in id.loc.gov without changing the
-        heading. This function checks if the heading is the same as the ACC term.
-        """
-        if str(self.current_heading).lower() != str(self.heading).lower():
-            self.revised_heading = True
+    @property
+    def revised_heading(self) -> bool:
+        if not self.current_heading:
+            return False
+        elif str(self.current_heading).lower() != str(self.heading).lower():
+            return True
         else:
-            self.revised_heading = False
+            return False
 
     @classmethod
     def fromMarcFile(cls, record: Record) -> LCTerm:
         id = ""
-        control_no = record.get("001")
-        if control_no and control_no.data:
-            id = control_no.data.replace(" ", "")
+        control_no = record["001"]
+        control_no_str = getattr(control_no, "data", "")
+        id = control_no_str.replace(" ", "")
         heading_fields = []
         for field in record.fields:
             if field.tag[0:1] == "1":

@@ -9,8 +9,8 @@ from pymarc import Field, Record, Subfield
 
 class FakeUtcNow(datetime.datetime):
     @classmethod
-    def now(cls, tz=datetime.timezone.utc):
-        return cls(2024, 6, 1, 1, 0, 0, 0, datetime.timezone.utc)
+    def now(cls):
+        return cls(2024, 6, 1, 1, 0, 0, 0)
 
 
 @pytest.fixture
@@ -25,43 +25,14 @@ class MockLCResponseRevised:
         self.status_code = 200
         self.ok = True
 
-    def json(self):
+    @property
+    def content(self):
         change_date = datetime.datetime.strftime(
-            (
-                datetime.datetime.now(tz=datetime.timezone.utc)
-                - datetime.timedelta(days=60)
-            ),
+            (datetime.datetime.now() - datetime.timedelta(days=60)),
             "%Y-%m-%dT%H:%M:%S",
         )
-        return [
-            {
-                "@id": "http://id.loc.gov/authorities/",
-                "@type": ["http://www.w3.org/2004/02/skos/core#Concept"],
-                "http://www.w3.org/2004/02/skos/core#prefLabel": [
-                    {"@language": "en", "@value": "Spam"}
-                ],
-            },
-            {
-                "@id": "_:b83iddOtlocdOtgovauthorities",
-                "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
-                "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": str(change_date)}
-                ],
-                "http://purl.org/vocab/changeset/schema#changeReason": [
-                    {"@value": "revised"}
-                ],
-            },
-            {
-                "@id": "_:b83iddOtlocdOtgovauthorities",
-                "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
-                "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": "2020-04-01T00:00:01"}
-                ],
-                "http://purl.org/vocab/changeset/schema#changeReason": [
-                    {"@value": "new"}
-                ],
-            },
-        ]
+        content_str = f'<marcxml:record xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:marcxml="http://www.loc.gov/MARC21/slim"><marcxml:leader>00584cz  a2200157n  4500</marcxml:leader><marcxml:controlfield tag="001">sh96010654</marcxml:controlfield><marcxml:controlfield tag="005">{change_date}</marcxml:controlfield><marcxml:controlfield tag="008">961106i| anannbabn          |a ana     |</marcxml:controlfield><marcxml:datafield tag="010" ind1=" " ind2=" "><marcxml:subfield code="a">sh 96010654 </marcxml:subfield></marcxml:datafield><marcxml:datafield tag="150" ind1=" " ind2=" "><marcxml:subfield code="a">Spam</marcxml:subfield></marcxml:datafield></marcxml:record>'
+        return content_str.encode()
 
 
 class MockLCResponseDeprecated:
@@ -71,43 +42,14 @@ class MockLCResponseDeprecated:
         self.status_code = 200
         self.ok = True
 
-    def json(self):
+    @property
+    def content(self):
         change_date = datetime.datetime.strftime(
-            (
-                datetime.datetime.now(tz=datetime.timezone.utc)
-                - datetime.timedelta(days=7)
-            ),
+            (datetime.datetime.now() - datetime.timedelta(days=7)),
             "%Y-%m-%dT%H:%M:%S",
         )
-        return [
-            {
-                "@id": "http://id.loc.gov/authorities/",
-                "@type": ["http://www.w3.org/2004/02/skos/core#Concept"],
-                "http://www.w3.org/2008/05/skos-xl#literalForm": [
-                    {"@language": "en", "@value": "Bar"}
-                ],
-            },
-            {
-                "@id": "_:b83iddOtlocdOtgovauthorities",
-                "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
-                "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": str(change_date)}
-                ],
-                "http://purl.org/vocab/changeset/schema#changeReason": [
-                    {"@value": "deprecated"}
-                ],
-            },
-            {
-                "@id": "_:b83iddOtlocdOtgovauthorities",
-                "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
-                "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": "2020-04-01T00:00:01"}
-                ],
-                "http://purl.org/vocab/changeset/schema#changeReason": [
-                    {"@value": "new"}
-                ],
-            },
-        ]
+        content_str = f'<marcxml:record xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:marcxml="http://www.loc.gov/MARC21/slim"><marcxml:leader>00584dz  a2200157n  4500</marcxml:leader><marcxml:controlfield tag="001">sh96010654</marcxml:controlfield><marcxml:controlfield tag="005">{change_date}</marcxml:controlfield><marcxml:controlfield tag="008">961106i| anannbabn          |a ana     |</marcxml:controlfield><marcxml:datafield tag="010" ind1=" " ind2=" "><marcxml:subfield code="a">sh 96010654 </marcxml:subfield></marcxml:datafield><marcxml:datafield tag="150" ind1=" " ind2=" "><marcxml:subfield code="a">Bar</marcxml:subfield></marcxml:datafield></marcxml:record>'
+        return content_str.encode()
 
 
 class MockLCResponseNew:
@@ -117,29 +59,10 @@ class MockLCResponseNew:
         self.status_code = 200
         self.ok = True
 
-    def json(self):
-        create_date = datetime.datetime.strftime(
-            datetime.datetime.now(), "%Y-%m-%dT%H:%M:%S"
-        )
-        return [
-            {
-                "@id": "http://id.loc.gov/authorities/",
-                "@type": ["http://www.w3.org/2004/02/skos/core#Concept"],
-                "http://www.w3.org/2008/05/skos-xl#literalForm": [
-                    {"@language": "en", "@value": "Foo"}
-                ],
-            },
-            {
-                "@id": "_:b83iddOtlocdOtgovauthorities",
-                "@type": ["http://purl.org/vocab/changeset/schema#ChangeSet"],
-                "http://purl.org/vocab/changeset/schema#createdDate": [
-                    {"@value": str(create_date)}
-                ],
-                "http://purl.org/vocab/changeset/schema#changeReason": [
-                    {"@value": "new"}
-                ],
-            },
-        ]
+    @property
+    def content(self) -> bytes:
+        content_str = '<marcxml:record xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:marcxml="http://www.loc.gov/MARC21/slim"><marcxml:leader>00584nz  a2200157n  4500</marcxml:leader><marcxml:controlfield tag="001">sh96010654</marcxml:controlfield><marcxml:controlfield tag="008">961106i| anannbabn          |a ana     |</marcxml:controlfield><marcxml:datafield tag="010" ind1=" " ind2=" "><marcxml:subfield code="a">sh 96010654 </marcxml:subfield></marcxml:datafield><marcxml:datafield tag="150" ind1=" " ind2=" "><marcxml:subfield code="a">Foo</marcxml:subfield></marcxml:datafield></marcxml:record>'
+        return content_str.encode()
 
 
 class MockLCResponseError:
@@ -247,11 +170,12 @@ def mock_read_csv(monkeypatch) -> None:
                 "heading3": ["BAZ"],
             }
         )
+
     def mock_to_csv(*args, **kwargs):
-        return None   
+        return None
 
     monkeypatch.setattr(pd, "read_csv", mock_df)
-    monkeypatch.setattr("pandas.DataFrame.to_csv", mock_to_csv)    
+    monkeypatch.setattr("pandas.DataFrame.to_csv", mock_to_csv)
     monkeypatch.setattr("os.path.exists", lambda *args, **kwargs: False)
 
 
