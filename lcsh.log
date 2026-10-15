@@ -87,3 +87,6 @@
 2026-09-15 14:12:03,641 - INFO - Checking id.loc.gov
 2026-09-15 14:12:03,641 - INFO - No changes to ACC terms this month.
 2026-09-15 14:12:03,641 - INFO - Updated list of current terms is in data/acc_out.csv
+2026-10-15 13:59:43,519 - INFO - Checking id.loc.gov
+2026-10-15 13:59:43,519 - DEBUG - Revised terms to check: ['sh85065259']
+2026-10-15 13:59:43,519 - INFO - Updated list of current terms is in data/acc_out.csv
