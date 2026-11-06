@@ -76,25 +76,15 @@ def test_load_creds(mock_open_file):
 
 def test_process_csv(mock_read_csv, mock_now):
     data = process_csv("data/backstage/Q_12-31review.txt")
-    assert sorted(list(data.columns)) == sorted(
-        [
-            "RECORD_NUMBER",
-            "LCCN",
-            "NORMALIZED_LCCN",
-            "HEADING_FROM_MARC_FILE",
-        ]
+    assert sorted(data.columns) == sorted(
+        ["RECORD_NUMBER", "LCCN", "NORMALIZED_LCCN", "HEADING_FROM_MARC_FILE"]
     )
 
 
 def test_process_csv_exists(mock_read_csv_exists, mock_now):
     data = process_csv("data/backstage/Q_12-31review.txt")
-    assert sorted(list(data.columns)) == sorted(
-        [
-            "RECORD_NUMBER",
-            "LCCN",
-            "NORMALIZED_LCCN",
-            "HEADING_FROM_MARC_FILE",
-        ]
+    assert sorted(data.columns) == sorted(
+        ["RECORD_NUMBER", "LCCN", "NORMALIZED_LCCN", "HEADING_FROM_MARC_FILE"]
     )
 
 
@@ -105,7 +95,7 @@ def test_write_delete_sheet(mock_sheet_config):
         spreadsheet_id="1hGzVYaqxXXBSJa3GY52UFKteZgLoWBo6X0sGsTVTpFU",
     )
     keys = data.keys()
-    assert sorted(list(keys)) == sorted(["spreadsheetId", "tableRange"])
+    assert sorted(keys) == sorted(["spreadsheetId", "tableRange"])
 
 
 def test_write_delete_sheet_timeout_error(mock_sheet_config, mock_sheet_timeout_error):

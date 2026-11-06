@@ -1,17 +1,16 @@
+"""Quarterly review of backstage delete files."""
+
 import sys
 import time
 
 import pandas as pd
 
-from acc_lcsh_check.backstage_utils import (
-    get_batches,
-    process_csv,
-    write_delete_sheet,
-)
+from acc_lcsh_check.backstage_utils import get_batches, process_csv, write_delete_sheet
 from acc_lcsh_check.lcsh import LCTerm
 
 
 def get_lc_results(row: pd.Series) -> list[str]:
+    """Create LCTerm objects from a Series."""
     term = LCTerm(row.iloc[2], row.iloc[3])
     out = [
         row.iloc[0],
@@ -26,6 +25,7 @@ def get_lc_results(row: pd.Series) -> list[str]:
 
 
 def run(file: str, first_rec: str = "0") -> None:
+    """Run quarterly backstage check."""
     df = process_csv(file)
     batches = get_batches(df, int(first_rec))
     columns = [

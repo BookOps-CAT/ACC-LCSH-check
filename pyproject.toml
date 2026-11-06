@@ -40,16 +40,23 @@ omit = [
     "monthly_lcsh_check.py"
 ]
 
-[tool.mypy]
-warn_unused_ignores = true
-disallow_untyped_defs = true
+[tool.ruff]
+fix = true
+
+[tool.ruff.lint]
+select = ["C", "D", "F", "E", "ANN"]
+ignore = ["ANN401"]
+extend-safe-fixes = ["ANN204", "C4", "D"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "ANN", "D"]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
 
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 disallow_untyped_defs = false
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["E501", "ANN"]
 
 [build-system]
 requires = ["poetry-core"]

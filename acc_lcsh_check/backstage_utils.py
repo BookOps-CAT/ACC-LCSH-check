@@ -1,25 +1,25 @@
+"""Utility functions used in backstage quarterly checks."""
+
 import datetime
 import json
 import os
 
 import pandas as pd
-from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
 from googleapiclient.discovery import build  # type: ignore
-from googleapiclient.errors import HttpError  # type: ignore
 
 
 def configure_sheet() -> Credentials:
-    """
-    Get or refresh token for Google Sheets API.
+    """Get or refresh token for Google Sheets API.
 
     Args:
         None
 
     Returns:
         google.oauth2.credentials.Credentials: Credentials object for google sheet API.
+
     """
     load_creds()
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -47,16 +47,13 @@ def configure_sheet() -> Credentials:
         }
     }
 
-    try:
-        creds = Credentials.from_authorized_user_info(token_dict)
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        elif not creds or not creds.valid:
-            flow = InstalledAppFlow.from_client_config(flow_dict, scopes)
-            creds = flow.run_local_server()
-        return creds
-    except (ValueError, RefreshError):
-        raise
+    creds = Credentials.from_authorized_user_info(token_dict)
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    elif not creds or not creds.valid:
+        flow = InstalledAppFlow.from_client_config(flow_dict, scopes)
+        creds = flow.run_local_server()
+    return creds
 
 
 def get_date() -> str:
@@ -72,7 +69,7 @@ def get_batches(dataframe: pd.DataFrame, start: int = 0) -> list:
 
 
 def load_creds() -> None:
-    """Load Google Sheet API credentials from JSON file and set as env vars"""
+    """Load Google Sheet API credentials from JSON file and set as env vars."""
     token_file = os.path.join(
         os.environ["USERPROFILE"], ".cred/.google/lcsh-token.json"
     )
@@ -100,33 +97,24 @@ def process_csv(filename: str) -> pd.DataFrame:
 
 
 def write_delete_sheet(data: pd.DataFrame, spreadsheet_id: str) -> dict:
-    """
-    A function to append data to a google sheet
-    """
+    """A function to append data to a google sheet."""
     range = f"BPLAuth_Verify{get_date()}!A2:D100000"
     spreadsheet = spreadsheet_id
-    try:
-        creds = configure_sheet()
-        service = build("sheets", "v4", credentials=creds)
+    creds = configure_sheet()
+    service = build("sheets", "v4", credentials=creds)
 
-        body = {
-            "majorDimension": "ROWS",
-            "range": range,
-            "values": data.values.tolist(),
-        }
-        result = (
-            service.spreadsheets()
-            .values()
-            .append(
-                spreadsheetId=spreadsheet,
-                range=range,
-                valueInputOption="USER_ENTERED",
-                insertDataOption="INSERT_ROWS",
-                body=body,
-                includeValuesInResponse=True,
-            )
-            .execute()
+    body = {"majorDimension": "ROWS", "range": range, "values": data.values.tolist()}
+    result = (
+        service.spreadsheets()
+        .values()
+        .append(
+            spreadsheetId=spreadsheet,
+            range=range,
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body=body,
+            includeValuesInResponse=True,
         )
-        return result
-    except (HttpError, TimeoutError):
-        raise
+        .execute()
+    )
+    return result

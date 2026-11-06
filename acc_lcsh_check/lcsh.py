@@ -1,3 +1,5 @@
+"""Wrapper class that handles interactions with id.loc.gov."""
+
 from __future__ import annotations
 
 import datetime
@@ -21,11 +23,19 @@ class LCTerm:
     }
 
     def __init__(self, id: str, heading: str) -> None:
+        """Initialize `LCTerm` instance.
+
+        Args:
+            id: the heading's ID from Sierra
+            heading: the heading as a string.
+
+        """
         self.id = id
         self.heading = heading
 
     @cached_property
     def marc_xml(self) -> Record | None:
+        """MARC xml returned from id.loc.gov HTTP request."""
         if self.status_code == 200:
             xml_data = self.xml_response.content
             return parse_xml_to_array(io.BytesIO(xml_data))[0]
@@ -39,25 +49,26 @@ class LCTerm:
 
     @cached_property
     def status_code(self) -> int:
+        """HTTP response code."""
         return self.xml_response.status_code
 
     @property
     def change_date(self) -> str | None:
+        """The last date the heading was changed as a string, if present."""
         if self.change_type == "new" or not self.marc_xml:
             return None
         return getattr(self.marc_xml.get("005"), "data", "")
 
     @property
     def change_type(self) -> str | None:
+        """What type of change was made to the heading as a string, if present."""
         if self.marc_xml:
             return self.STATUS[self.marc_xml.leader[5]]
         return None
 
     @property
     def current_heading(self) -> str | None:
-        """
-        Parse response from id.loc.gov and get current heading.
-        """
+        """Parse response from id.loc.gov and get current heading."""
         if not self.marc_xml:
             return None
         fields_1xx = [i for i in self.marc_xml.fields if i.tag.startswith("1")]
@@ -65,12 +76,14 @@ class LCTerm:
 
     @property
     def deprecated_date(self) -> str | None:
+        """The date the heading was deprecated as a string, if present."""
         if self.is_deprecated:
             return self.change_date
         return None
 
     @property
     def id_type(self) -> str:
+        """The type of heading (ie. name, subject, or demographic term)."""
         if self.id[:2] == "sh":
             return "subjects"
         elif self.id[:2] == "dg":
@@ -82,12 +95,14 @@ class LCTerm:
 
     @property
     def is_deprecated(self) -> bool:
+        """Whether or not the heading has been deprecated as a bool."""
         if self.change_type == "deprecated":
             return True
         return False
 
     @property
     def recent_change(self) -> bool:
+        """Whether or not the heading has been changed in the last month as a bool."""
         if self.change_type == "new" or not self.change_date:
             return False
         change_datetime = datetime.datetime.strptime(
@@ -100,6 +115,7 @@ class LCTerm:
 
     @property
     def revised_heading(self) -> bool:
+        """Whether or not the heading has been revised as a bool."""
         if not self.current_heading:
             return False
         elif str(self.current_heading).lower() != str(self.heading).lower():
@@ -109,6 +125,7 @@ class LCTerm:
 
     @classmethod
     def fromMarcFile(cls, record: Record) -> LCTerm:
+        """Create a LCTerm instance from a pymarc.Record object."""
         id = ""
         control_no = record["001"]
         control_no_str = getattr(control_no, "data", "")

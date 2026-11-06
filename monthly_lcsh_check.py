@@ -1,3 +1,5 @@
+"""Monthly checks for all ACC terms."""
+
 from acc_lcsh_check.log import LogSession
 
 if __name__ == "__main__":

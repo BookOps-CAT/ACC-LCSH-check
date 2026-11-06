@@ -1,3 +1,5 @@
+"""Wrapper session that handles checks for a list of LCTerms."""
+
 import csv
 import datetime
 import logging
@@ -8,7 +10,20 @@ from acc_lcsh_check.lcsh import LCTerm
 
 
 class LogSession:
-    def __init__(self, logger_name: str, logfile: str, infile: str, outfile: str):
+    """Create a LogSession."""
+
+    def __init__(
+        self, logger_name: str, logfile: str, infile: str, outfile: str
+    ) -> None:
+        """Initialize a `LogSession` instance.
+
+        Args:
+            logger_name: the name of the logger object
+            logfile: the file where the logs should be saved
+            infile: the file of headings to be read
+            outfile: the file where headings should be output
+
+        """
         self.logger_name = logger_name
         self.logfile = logfile
         self.infile = infile
@@ -49,6 +64,7 @@ class LogSession:
         return self.session_data
 
     def run_logger(self) -> None:
+        """Start logger session."""
         if os.path.exists(f"{self.outfile}"):
             os.remove(f"{self.outfile}")
 
@@ -68,6 +84,7 @@ class LogSession:
         self.logger.info(f"Updated list of current terms is in {self.outfile}")
 
     def rename_files(self) -> None:
+        """Rename files after log session has completed."""
         today = datetime.datetime.strftime(datetime.datetime.now(), "%Y%m%d")
         if os.path.exists(f"{self.infile.split('.')[0]}_{today}.csv"):
             os.remove(f"{self.infile.split('.')[0]}_{today}.csv")
