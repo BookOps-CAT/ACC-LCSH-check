@@ -1,15 +1,19 @@
 name: monthly lcsh check
 on:
   schedule:
-    - cron: '5 9 15 * *'
+    - cron: '5 9 17 * *'
+permissions: {}
 env:
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_REPO: ${{ github.repository }}
   ASSIGNEES: charlottekostelic
+
 jobs:
   monthly-run:
     name: Run monthly LCSH check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
         with:
@@ -21,54 +25,36 @@ jobs:
 
       - name: Get date var
         run: |
-          echo "DATE=$(date "+%Y-%m-%d")"  >> $GITHUB_ENV
+          echo "DATE=$(date "+%Y-%m-%d")" >> $GITHUB_ENV
 
-      - name: Create branch, run script
+      - name: Run script
         run: |
-          git checkout -b monthly_check_$DATE
           uv run monthly_lcsh_check.py
 
-      - name: Commit and push changed files
-        run: |
-          git config user.name "Charlotte Kostelic"
-          git config user.email "charlottekostelic@bookops.org"
-          git add lcsh.log
-          git add data/*
-          git commit -a -m "LCSH Check $DATE"
-          git push --set-upstream origin monthly_check_$DATE
-
-      - name: Parse output, create PR and issue text
+      - name: Parse output, create issue text
         run: |
           echo "CHANGED=$(grep -Eq "$DATE .+DEBUG" lcsh.log && echo 'true' || echo 'false')" >> $GITHUB_ENV
           REVISED_LIST=$(grep -E "$DATE .+DEBUG - Revised" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
           DEPRECATED_LIST=$(grep -E "$DATE .+DEBUG - Deprecated" lcsh.log | grep -Eo "\[.+]$" || echo 'false')
           {
-            echo "PR_BODY<<EOF"
-            echo "### Changed:"
-            echo " + lcsh.log updated with data from workflow run on $(date '+%D')"
-            echo "$(grep -Eq "$DATE .+DEBUG" lcsh.log && echo '### Added:' && echo ' + New infile is: data/acc_in.csv' && echo ' + Old infile is: data/acc_in_${{ env.DATE }}' || echo '')"
-            echo EOF
-          } >> $GITHUB_ENV
-          {
             echo "ISSUE_BODY<<EOF"
-            echo "$(grep -Eq "$DATE .+DEBUG - Revised" lcsh.log && echo '### Changed:' && echo "$REVISED_LIST" || '$(grep -Eq "$DATE .+DEBUG - Revised" lcsh.log)')"
-            echo "$(grep -Eq "$DATE .+DEBUG - Deprecated" lcsh.log && echo '### Deprecated:' && echo "$DEPRECATED_LIST" || '$(grep -Eq "$DATE .+DEBUG - Deprecated" lcsh.log)')"
-            echo EOF
+            if grep -Eq "$DATE .+DEBUG - Revised" lcsh.log; then
+              echo "### Changed:"
+              echo "$REVISED_LIST"
+            fi
+            if grep -Eq "$DATE .+DEBUG - Deprecated" lcsh.log; then
+              echo "### Deprecated:"
+              echo "$DEPRECATED_LIST"
+            fi
+            echo "EOF"
           } >> $GITHUB_ENV
-
-      - name: Create PR
-        run: |
-          echo "${{ env.PR_BODY }}"
-          gh pr create \
-            --repo ${{ github.repository }} \
-            --assignee "$ASSIGNEES" \
-            --title "Monthly LCSH check ($DATE)" \
-            --body "$PR_BODY"
 
       - name: Create Issue
         if: ${{ env.CHANGED == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "${{ env.ISSUE_BODY }}"
+          echo "${ISSUE_BODY}"
           gh issue create \
             --title "Changes to ACC LCSH ($DATE)" \
             --assignee "$ASSIGNEES" \
